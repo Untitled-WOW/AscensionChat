@@ -78,7 +78,7 @@ object WoWChat extends StrictLogging {
 
   private def checkForNewVersion = {
     // This is JSON, but I really just didn't want to import a full blown JSON library for one string.
-    val data = Source.fromURL("https://api.github.com/repos/Szyler/AscensionChat/releases/latest").mkString
+    val data = Source.fromURL("https://api.github.com/repos/NotYourAverageGamer/AscensionChat/releases/latest").mkString
     val regex = "\"tag_name\":\"(.+?)\",".r
     val repoTagName = regex
       .findFirstMatchIn(data)
@@ -86,11 +86,11 @@ object WoWChat extends StrictLogging {
       .getOrElse("NOT FOUND")
 
     if (repoTagName != RELEASE) {
-      logger.error( "~~~ !!!                YOUR AscensionChat VERSION IS OUT OF DATE                !!! ~~~")
-      logger.error(s"~~~ !!!                     Current Version:  $RELEASE                      !!! ~~~")
-      logger.error(s"~~~ !!!                     Repo    Version:  $repoTagName                      !!! ~~~")
-      logger.error( "~~~ !!!         GO TO https://github.com/Szyler/AscensionChat TO UPDATE      !!! ~~~")
-      logger.error( "~~~ !!!                YOUR AscensionChat VERSION IS OUT OF DATE                !!! ~~~")
+      logger.error( "~~~ !!!                   YOUR AscensionChat VERSION IS OUT OF DATE                          !!! ~~~")
+      logger.error(s"~~~ !!!                        Current Version:  $RELEASE                                    !!! ~~~")
+      logger.error(s"~~~ !!!                        Latest  Version:  $repoTagName                                !!! ~~~")
+      logger.error( "~~~ !!!         GO TO https://github.com/NotYourAverageGamer/AscensionChat TO UPDATE         !!! ~~~")
+      logger.error( "~~~ !!!                   YOUR AscensionChat VERSION IS OUT OF DATE                          !!! ~~~")
     }
   }
 }
