@@ -1,30 +1,29 @@
 AscensionChat -- README
 =================
 
-AscensionChat is a Discord integration chat bot for old versions of World of Warcraft.
+**This fork has been modified for use with the `Ascension Project`. Some changes will need to be made if you want to use this with other servers**
+
+
+AscensionChat is a Discord integration chat bot for the `Ascension Project` forked from `WoWChat` by fjaros. My *(NotYourAverageGamer)* fork also contains code sourced from szyler and xan-asc, thank you all!
 
 **It does NOT support WoW Classic or Retail servers.**
 
 New Requirement: Due to Discord changes, you must check PRESENCE INTENT and SERVER MEMBERS INTENT under Privileged Gateway Intents in Discord developer portal.
 
 Currently supported versions are:
-  * Vanilla
-  * The Burning Crusade
-  * Wrath of the Lich King
-  * Cataclysm (4.3.4 build 15595)
-  * Mists of Pandaria (5.4.8 build 18414)
+  * Ascension WoW 3.3.5
 
 Features:
 * Clientless (Does not need the WoW Client to be open to run)
 * Seamless Chat integration of channels between WoW and Discord
-  * Guild chat, Officer chat, Local chat, Emotes, Custom Channels.
-  * In-game links (items, spells, ...) are displayed as links to classicdb or twinstar, depending on the expansion
+  * Guild chat, Officer chat, Local chat, Emotes, Custom Channels. (I have disabled many by default, check config for all options.)
+  * In-game links (items, spells, ...) are displayed as links to db.ascension.gg
   * Configurable message format
 * Smart Tagging
-  * Tag players on Discord from WoW using @and_part_or_all_of_their_name.
-  * You can also tag @here and @everyone and "@Even Roles With Spaces" (include quotes around them).
+  * Tag players on Discord from WoW using `@and_part_or_all_of_their_name`.
+  * You can also tag `@here` and `@everyone` and `"@Even Roles With Spaces"` (include quotes around them).
 * Custom commands
-  * Check who is online in your guild
+  * Check who is online in your guild with `?who`
   * Query other players in the world
 * Runs as a Java program, and therefore works on Windows, Mac, and Linux.
 
@@ -33,8 +32,10 @@ The bot uses Discord's API to login to your Discord server. It then uses supplie
 to login as a WoW character onto your chosen server. Once it logs in to WoW as a character,
 and sees the configured channels. It will relay messages in Discord chat and WoW chat respectively.
 
-##### DO NOT, under any circumstances, use this bot on an account with existing characters!
-Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the account!
+
+### DO NOT, under any circumstances, use this bot on an account with existing characters!
+Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the *account*!
+Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
 
 ##### Watching GD's WotLK chat:
 ![gd-echoes](https://raw.githubusercontent.com/fjaros/wowchat/master/images/example1.png)
@@ -120,7 +121,7 @@ Even though this bot does not do anything malicious, some servers may not like a
 
 OR to compile yourself:
 1. WoW Chat is written in Scala and compiles to a Java executable using [maven](https://maven.apache.org).
-2. It uses Java JDK 1.8 and Scala 2.12.12.
+2. It requires Java JDK 1.8+ and Scala 2.12.19.
 3. Run `mvn clean package` which will produce a file in the target folder called `wowchat-2.0.1.zip`
 4. unzip `wowchat-2.0.1.zip`, edit the configuration file and run `java -jar wowchat.jar <config file>`
    * If no config file is supplied, the bot will try to use `wowchat.conf`
