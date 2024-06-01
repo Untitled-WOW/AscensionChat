@@ -16,12 +16,12 @@ object WoWChat extends StrictLogging {
   private val RELEASE = "v24.6.1"
 
   def main(args: Array[String]): Unit = {
-    logger.info(s"Running WoWChat - $RELEASE")
+    logger.info(s"Running AscensionChat - $RELEASE")
     val confFile = if (args.nonEmpty) {
       args(0)
     } else {
-      logger.info("No configuration file supplied. Trying with default wowchat.conf.")
-      "wowchat.conf"
+      logger.info("No configuration file supplied. Trying with default ascensionchat.conf.")
+      "ascensionchat.conf"
     }
     Global.config = WowChatConfig(confFile)
 
@@ -86,11 +86,11 @@ object WoWChat extends StrictLogging {
       .getOrElse("NOT FOUND")
 
     if (repoTagName != RELEASE) {
-      logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
+      logger.error( "~~~ !!!                YOUR AscensionChat VERSION IS OUT OF DATE                !!! ~~~")
       logger.error(s"~~~ !!!                     Current Version:  $RELEASE                      !!! ~~~")
       logger.error(s"~~~ !!!                     Repo    Version:  $repoTagName                      !!! ~~~")
       logger.error( "~~~ !!!         GO TO https://github.com/Szyler/AscensionChat TO UPDATE      !!! ~~~")
-      logger.error( "~~~ !!!                YOUR WoWChat VERSION IS OUT OF DATE                !!! ~~~")
+      logger.error( "~~~ !!!                YOUR AscensionChat VERSION IS OUT OF DATE                !!! ~~~")
     }
   }
 }
