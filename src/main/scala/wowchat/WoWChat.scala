@@ -20,8 +20,8 @@ object WoWChat extends StrictLogging {
     val confFile = if (args.nonEmpty) {
       args(0)
     } else {
-      logger.info("No configuration file supplied. Trying with default ascensionchat.conf.")
-      "ascensionchat.conf"
+      logger.info("No configuration file supplied. Trying with default wowchat.conf.")
+      "wowchat.conf"
     }
     Global.config = WowChatConfig(confFile)
 

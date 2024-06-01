@@ -25,7 +25,7 @@
             <directory>src/main/resources</directory>
             <includes>
                 <include>logback.xml</include>
-                <include>ascensionchat.conf</include>
+                <include>wowchat.conf</include>
             </includes>
             <fileMode>0644</fileMode>
         </fileSet>
