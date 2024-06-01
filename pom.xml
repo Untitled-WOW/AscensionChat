@@ -139,7 +139,7 @@
                 <version>2.6</version>
                 <configuration>
                     <finalName>${project.artifactId}-${project.version}</finalName>
-                    <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    <descriptors>src/main/assembly/assembly.xml</descriptors>
                     <appendAssemblyId>false</appendAssemblyId>
                     <tarLongFileMode>posix</tarLongFileMode>
                 </configuration>
