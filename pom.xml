@@ -110,7 +110,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <finalName>ascensionchat</finalName>
+                    <finalName>wowchat</finalName>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
