@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>wowchat</groupId>
-    <artifactId>wowchat</artifactId>
+    <groupId>ascensionchat</groupId>
+    <artifactId>ascensionchat</artifactId>
     <version>24.06.1</version>
 
     <properties>
         <java.version>1.8</java.version>
         <scala.version.major>2.12</scala.version.major>
-        <scala.version.minor>12</scala.version.minor>
+        <scala.version.minor>19</scala.version.minor>
     </properties>
 
     <dependencies>
@@ -110,7 +110,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <finalName>wowchat</finalName>
+                    <finalName>ascensionchat</finalName>
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
