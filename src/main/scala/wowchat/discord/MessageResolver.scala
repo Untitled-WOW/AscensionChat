@@ -42,7 +42,7 @@ class MessageResolver(jda: JDA) {
 
   def resolveAchievementId(achievementId: Int): String = {
     val name = GameResources.ACHIEVEMENT.getOrElse(achievementId, achievementId)
-    s"[[$name]](<$linkSite?achievement=$achievementId>) "
+    s"[$name]($linkSite?achievement=$achievementId)"
   }
 
   def stripColorCoding(message: String): String = {
