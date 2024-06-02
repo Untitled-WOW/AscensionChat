@@ -1,4 +1,4 @@
-# AscensionChat -- README
+# AscensionChat
 
 **This fork has been modified for use with the Ascension Project. Some changes will need to be made if you want to use this with other servers**
 
