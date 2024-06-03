@@ -120,6 +120,6 @@ Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
 
 1. WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [Maven](https://maven.apache.org).
 2. It requires **Java JDK 1.8+** and **Scala 2.12.19**.
-3. Run `mvn clean package` which will produce a file in the target folder called `ascensionchat-24.6.2.zip`
-4. unzip `ascensionchat-24.6.2.zip`, edit the configuration file and run `java -jar ascensionchat.jar <config file>`
+3. Run `mvn clean package` which will produce a file in the target folder called `ascensionchat-24.6.3.zip`
+4. unzip `ascensionchat-24.6.3.zip`, edit the configuration file and run `java -jar ascensionchat.jar <config file>`
    - If no config file is supplied, the bot will try to use `ascensionchat.conf`

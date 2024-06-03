@@ -13,7 +13,7 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v24.6.2"
+  private val RELEASE = "v24.6.3"
 
   def main(args: Array[String]): Unit = {
     logger.info(s"Running AscensionChat - $RELEASE")
