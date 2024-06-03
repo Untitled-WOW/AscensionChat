@@ -36,7 +36,7 @@ it will relay messages to your Discord and WoW channels respectively.
 ### DO NOT, under any circumstances, use this bot on an account with existing characters!
 
 Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the **_account_**!
-Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
+Make a new account for just the bot. **_YOU HAVE BEEN WARNED!_**
 
 #### Example 1 (before fixing achievement whitespace)
 
@@ -57,9 +57,8 @@ Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
    - Disable the `Public Bot` option.
    - Enable `PRESENCE INTENT` and `SERVER MEMBERS INTENT` under `Privileged Gateway Intents`. **This is important! Without it, your bot will not work!**
    - Underneath where it says `TOKEN` click `Copy`. This is what Ascension Chat will use to log into Discord.
-2. Configure AscensionChat by opening `ascensionchat.conf` in your text editor of choice.
+2. Configure AscensionChat by opening `ascensionchat.conf` in your text editor of choice. You can also create your own file, using the supplied `ascensionchat.conf` as a template.
 
-   - You can also create your own file, using the supplied `ascensionchat.conf` as a template.
    - **Discord** section:
      - `token`: Paste the `Bot token` you copied just above.
      - `enable_dot_commands`: If set to `1`, it will not format outgoing messages starting with `.`, enabling you to send things like `.s in` to the server directly. If set to `0`, it will format these messages like regular messages.
@@ -67,8 +66,9 @@ Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
      - `enable_invite_command`: If set to `1`, it will allow the use of `?invite charname` anywhere `?who` is allowed. If set to `0`, it disables the command.
      - `banned_invite_list`: A list of character names that cannot be used with `?invite`
      - `enable_commands_channels`: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
-   - **wow** section:
-     - `platform`: Leave as **Mac** unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put **Windows**.
+   - **WoW** section:
+     - `platform`: Leave as `Mac` unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case put `Windows`.
+       - **NOTE:** for Ascension, I can not get past character selection if `Mac` is set on MacOS. Having `platform=Windows` seems to work without issue.
      - `locale`: Optionally specify a locale if you want to join locale-specific global channels. **enUS** is the default locale.
      - `enable_server_motd`: Set to `0` to ignore sending server's MotD. Set to `1` to send server's MotD as a SYSTEM message.
      - `account`: Replace `REPLACE-ME` with the bot's Ascension account name.
@@ -79,24 +79,24 @@ Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
      - For each notification, `online`, `offline`, `joined`, `left`, `motd`, `achievement` specify:
        - `enabled`: `0` to not display in Discord, `1` to display in Discord
        - `format`: How should the message be displayed?
-       - `channel`: Enter the `Channel name` OR `ID`of where you want the message displayed, instead of the default `guildrelay-chat` channel.
+       - `channel`: Enter the `Channel name` **OR** `ID`of where you want the message displayed, instead of the default `guildrelay-chat` channel.
    - **Chat** section:
      - This section sets up the channel relays between Discord and Ascension. You can have an unlimited number of channel relays.
      - `direction`: How do you want to relay each channel? Put:
        `wow_to_discord`, `discord_to_wow`, or `both`.
      - **wow** section:
-       - In `type` put one of: **Say**, **Guild**, **Officer**, **Emote**, **Yell**, **System**, **Whisper**, **Channel**. This is the type of chat the Bot will read for this section.
+       - In `type` put one of: `Say`, `Guild`, `Officer`, `Emote`, `Yell`, `System`, `Whisper`, `Channel`. This is the type of chat the Bot will read for this section.
          - If you put `type=Channel`, you must also provide a `channel=yourChannelName` value.
        - In `format` put how you want to display the message. Supported replaceable values are, `%time`, `%user`, `%message` and `%channel`, if above `type` is `Channel`.
        - `filters`: See filters section. If a channel configuration has this section, it will override the global filters and use these instead for this channel.
-         - If this is in the `wow` section, it will filter Discord->WoW messages.
+         - If this is in the `wow` section, it will filter `Discord->WoW` messages.
        - Optionally in `id`, specify the `channel ID` if your server has a non-standard global channel.
      - **Discord** section:
        - `channel`: The Discord channel **name** OR **ID** where to display the message. **It is advised to use channel ID here instead of name, so the bot does not stop working when the channel name is changed.**
          - To see channels' IDs, you must enable Developer mode in Discord under User Settings -> Appearance -> Advanced.
        - `format`: Same options as in **wow** section above.
        - `filters`: See filters section. If a channel configuration has this section, it will override the global filters and use these instead for this channel.
-         - If this is in the `discord` section, it will filter WoW->Discord messages.
+         - If this is in the `discord` section, it will filter `WoW->Discord` messages.
    - In section **filters**:
      - This section specifies filters for chat messages to be ignored by the bot. It works for both directions, Discord to WoW and WoW to Discord. It can be overriden in each specific channel configuration as stated above.
      - `enabled`: **0** to globally disable all filters, **1** to enable them.
@@ -106,20 +106,37 @@ Make a new account for just the bot. **YOU HAVE BEEN WARNED!**
 3. Invite your bot to Discord
    - Go back to <https://discordapp.com/developers/applications/> and click your new Bot application.
    - In browser enter: <https://discordapp.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot>
-     - Replace `CLIENT_ID` (the one in CAPS) in the URL with the token from the Discord applications page earlier.
+     - Replace **`CLIENT_ID`** (the one in CAPS) in the URL with the token from the Discord applications page earlier.
    - Assign the bot the necessary Discord roles/permissions to view/enter your desired channels.
 
 ## Run
 
 1. Download the latest ready-made binary from github releases: <https://github.com/NotYourAverageGamer/AscensionChat/releases>
+
    - **Make sure you have a Java Runtime Environment (JRE) 1.8 or higher installed on your system!**
+
+     - Check the version of your Java installtion with
+
+       ```bash
+       java -version
+       ```
+
    - **On Windows**: Edit `ascensionchat.conf` as above and run `run.bat`
    - **On Mac/Linux**: Edit `ascensionchat.conf` as above and run `run.sh`
 
 **OR** to compile yourself:
 
-1. WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [Maven](https://maven.apache.org).
-2. It requires **Java JDK 1.8+** and **Scala 2.12.19**.
+1. WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [**Maven**](https://maven.apache.org).
+2. It requires **Java JDK 1.8+** _(works for me with 17 & 21)_ and [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html).
+
+   - Check the version of your Java installtion with
+
+     ```bash
+     java -version
+     ```
+
+   - You may need to restart your terminal for install/upgrade to take effect.
+
 3. Run `mvn clean package` which will produce a file in the target folder called `ascensionchat-24.6.3.zip`
-4. unzip `ascensionchat-24.6.3.zip`, edit the configuration file and run `java -jar ascensionchat.jar <config file>`
+4. unzip `ascensionchat-24.6.3.zip`, edit the configuration file and run `run.bat` for windows or `run.sh` for Linux/MacOS. (edit the name of the config file in `run.*` if you supply your own config)
    - If no config file is supplied, the bot will try to use `ascensionchat.conf`
