@@ -16,13 +16,13 @@ object CommandHandler extends StrictLogging {
   private val NOT_ONLINE = "Bot is not online."
   private val NOT_ALLOWED = "Bot does not have permission to run that command in this channel."
 
-  // make some of these configurable
+  // Command trigger prefix
   private val trigger = "?"
 
-  // gross. rewrite
+  // Placeholder for whoRequest; consider refactoring for better design
   var whoRequest: WhoRequest = _
 
-  // returns back the message as an option if unhandled
+  // Handle commands from Discord; returns true if the message is a command and handled
   // needs to be refactored into a Map[String, <Intelligent Command Handler Function>]
   def apply(fromChannel: MessageChannel, message: String): Boolean = {
     if (!message.startsWith(trigger)) {
@@ -96,7 +96,7 @@ object CommandHandler extends StrictLogging {
     })
   }
 
-  // eww
+  // Handle response for who command and check guild roster (eww)
   def handleWhoResponse(whoResponse: Option[WhoResponse],
                         guildInfo: GuildInfo,
                         guildRoster: mutable.Map[Long, GuildMember],

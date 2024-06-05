@@ -8,9 +8,18 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
 import scala.util.Random
 
+/**
+ * Handles game packets for the Wrath of the Lich King (WotLK) expansion.
+ * 
+ * @param realmId             The ID of the realm
+ * @param realmName           The name of the realm
+ * @param sessionKey          The session key used for encryption
+ * @param gameEventCallback   The callback for game events
+ */
 class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandlerTBC(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsWotLK {
 
+  /** Addon information specific to WotLK expansion */
   override protected val addonInfo: Array[Byte] = Array(
     0x9E, 0x02, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xD2, 0xC1, 0x6A, 0xC3, 0x30, 0x0C, 0xC6, 0x71, 0xEF,
     0x29, 0x76, 0xE9, 0x9B, 0xEC, 0xB4, 0xB4, 0x50, 0xC2, 0xEA, 0xCB, 0xE2, 0x9E, 0x8B, 0x62, 0x7F,
@@ -28,6 +37,12 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     0x1C, 0x3E, 0x9E, 0xE1, 0x93, 0xC8, 0x8D
   ).map(_.toByte)
 
+  /**
+   * Parses the authentication challenge from a packet.
+   *
+   * @param msg The packet containing the authentication challenge
+   * @return An AuthChallengeMessage
+   */
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val account = Global.config.wow.account
 
@@ -60,6 +75,12 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     AuthChallengeMessage(sessionKey, out)
   }
 
+  /**
+   * Parses a name query from a packet.
+   *
+   * @param msg The packet containing the name query
+   * @return A NameQueryMessage
+   */
   override protected def parseNameQuery(msg: Packet): NameQueryMessage = {
     val guid = unpackGuid(msg.byteBuf)
 
@@ -85,12 +106,13 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     val characterBytes = Global.config.wow.character.toLowerCase.getBytes("UTF-8")
     val charactersNum = msg.byteBuf.readByte
 
-    // only care about guid and name here
+    // Iterate through all characters in the enum message (we only care about GUID and name)
     (0 until charactersNum).foreach(i => {
-      val guid = msg.byteBuf.readLongLE
-      val name = msg.readString
-      val race = msg.byteBuf.readByte // will determine what language to use in chat
+      val guid = msg.byteBuf.readLongLE // Read character GUID
+      val name = msg.readString // Read character name
+      val race = msg.byteBuf.readByte // Read character race (used to determine language in chat)
 
+      // Skip over irrelevant character details
       msg.byteBuf.skipBytes(1) // class
       msg.byteBuf.skipBytes(1) // gender
       msg.byteBuf.skipBytes(1) // skin
@@ -100,66 +122,70 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
       msg.byteBuf.skipBytes(1) // facial hair
       msg.byteBuf.skipBytes(1) // level
       msg.byteBuf.skipBytes(4) // zone
-      msg.byteBuf.skipBytes(4) // map - could be useful in the future to determine what city specific channels to join
+      msg.byteBuf.skipBytes(4) // map (could be useful for city-specific channels)
 
-      msg.byteBuf.skipBytes(12) // x + y + z
+      msg.byteBuf.skipBytes(12) // x + y + z coordinates
 
-      val guildGuid = msg.byteBuf.readIntLE
+      val guildGuid = msg.byteBuf.readIntLE // Read character's guild GUID
       if (name.toLowerCase.getBytes("UTF-8").sameElements(characterBytes)) {
-        return Some(CharEnumMessage(name, guid, race, guildGuid))
+        return Some(CharEnumMessage(name, guid, race, guildGuid)) // Return character enum message if names match
       }
 
+      // Skip remaining character details
       msg.byteBuf.skipBytes(4) // character flags
-      msg.byteBuf.skipBytes(4) // character customize flags WotLK only
+      msg.byteBuf.skipBytes(4) // character customize flags (WotLK only)
       msg.byteBuf.skipBytes(1) // first login
       msg.byteBuf.skipBytes(12) // pet info
-      msg.byteBuf.skipBytes(19 * 9) // equipment info TBC has 9 slot equipment info
-      msg.byteBuf.skipBytes(4 * 9) // bag display for WotLK has all 4 bags
+      msg.byteBuf.skipBytes(19 * 9) // equipment info (TBC has 9 slot equipment info)
+      msg.byteBuf.skipBytes(4 * 9) // bag display (WotLK has all 4 bags)
     })
-    None
+    None // Return None if no character matches
   }
 
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
-    val tp = msg.byteBuf.readByte
+    val tp = msg.byteBuf.readByte // Read chat message type
 
-    val lang = msg.byteBuf.readIntLE
-    // ignore addon messages
+    val lang = msg.byteBuf.readIntLE // Read language of the chat message
+    // Ignore addon messages
     if (lang == -1) {
       return None
     }
 
-    // ignore messages from itself, unless it is a system message.
+    // Ignore messages from self unless it's a system message
     val guid = msg.byteBuf.readLongLE
     if (tp != ChatEvents.CHAT_MSG_SYSTEM && guid == selfCharacterId.get) {
       return None
     }
 
-    msg.byteBuf.skipBytes(4)
-	val gmMessage = msg.id == SMSG_GM_MESSAGECHAT
-	
+    msg.byteBuf.skipBytes(4) // Skip unnecessary bytes
+    val gmMessage = msg.id == SMSG_GM_MESSAGECHAT // Check if the message is from a GM
+
+    // Skip additional data for GM messages
     if (msg.id == SMSG_GM_MESSAGECHAT) {
       msg.byteBuf.skipBytes(4)
       msg.skipString
     }
 
+    // Read channel name if the message type is channel-based
     val channelName = if (tp == ChatEvents.CHAT_MSG_CHANNEL) {
       Some(msg.readString)
     } else {
       None
     }
 
-    // ignore if from an unhandled channel - unless it is a guild achievement message
+    // Ignore unhandled channels unless it's a guild achievement message
     if (tp != ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT && !Global.wowToDiscord.contains((tp, channelName.map(_.toLowerCase)))) {
       return None
     }
 
-    msg.byteBuf.skipBytes(8) // skip guid again
+    msg.byteBuf.skipBytes(8) // Skip GUID again
 
-    val txtLen = msg.byteBuf.readIntLE
-    val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.forName("UTF-8")).toString
-    msg.byteBuf.skipBytes(1) // null terminator
-    msg.byteBuf.skipBytes(1) // chat tag
+    val txtLen = msg.byteBuf.readIntLE // Read the length of the chat text
+    val txt = msg.byteBuf.readCharSequence(txtLen - 1, Charset.forName("UTF-8")).toString // Read the chat text
+    msg.byteBuf.skipBytes(1) // Skip null terminator
+    msg.byteBuf.skipBytes(1) // Skip chat tag
 
+    // Handle guild achievement events
     if (tp == ChatEvents.CHAT_MSG_GUILD_ACHIEVEMENT) {
       handleAchievementEvent(guid, msg.byteBuf.readIntLE)
       None
@@ -169,14 +195,15 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
   }
 
   protected def handleAchievementEvent(guid: Long, achievementId: Int): Unit = {
-    // This is a guild event so guid MUST be in roster already
+    // This is a guild event so GUID MUST be in roster already
     // (unless some weird edge case -> achievement came before roster update)
     guildRoster.get(guid).foreach(player => {
       Global.discord.sendAchievementNotification(player.name, achievementId)
     })
   }
 
-  // saving those single 0 bytes like whoa
+  // Unpack GUID from ByteBuf
+  // Saving those single 0 bytes like whoa
   private def unpackGuid(byteBuf: ByteBuf): Long = {
     val set = byteBuf.readByte
 

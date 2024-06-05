@@ -6,8 +6,14 @@ import wowchat.common.{ByteUtils, Packet}
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * Encoder for encoding game packets specific to World of Warcraft: Mists of Pandaria expansion (Patch 5.4.8).
+  */
 class GamePacketEncoderMoP extends GamePacketEncoderCataclysm with GamePacketsMoP18414 {
 
+  /**
+    * Encodes a game packet into bytes.
+    */
   override def encode(ctx: ChannelHandlerContext, msg: Packet, out: ByteBuf): Unit = {
     val crypt = ctx.channel.attr(CRYPT).get
     val unencrypted = isUnencryptedPacket(msg.id)

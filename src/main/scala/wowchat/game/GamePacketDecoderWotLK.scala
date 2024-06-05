@@ -2,8 +2,14 @@ package wowchat.game
 
 import io.netty.buffer.ByteBuf
 
+/**
+  * Decoder for decoding game packets specific to World of Warcraft: Wrath of the Lich King expansion.
+  */
 class GamePacketDecoderWotLK extends GamePacketDecoder with GamePacketsWotLK {
 
+  /**
+    * Parses the encrypted game header from the input.
+    */
   override def parseGameHeaderEncrypted(in: ByteBuf, crypt: GameHeaderCrypt): (Int, Int) = {
     val header = new Array[Byte](HEADER_LENGTH)
     in.readBytes(header)

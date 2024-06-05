@@ -8,8 +8,14 @@ import io.netty.handler.codec.MessageToByteEncoder
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+  * Encoder for encoding game packets.
+  */
 class GamePacketEncoder extends MessageToByteEncoder[Packet] with GamePackets with StrictLogging {
 
+  /**
+    * Encodes a game packet into bytes.
+    */
   override def encode(ctx: ChannelHandlerContext, msg: Packet, out: ByteBuf): Unit = {
     val crypt = ctx.channel.attr(CRYPT).get
     val unencrypted = isUnencryptedPacket(msg.id)
@@ -33,6 +39,9 @@ class GamePacketEncoder extends MessageToByteEncoder[Packet] with GamePackets wi
     msg.byteBuf.release
   }
 
+  /**
+    * Checks if the packet is unencrypted.
+    */
   protected def isUnencryptedPacket(id: Int): Boolean = {
     id == CMSG_AUTH_CHALLENGE
   }

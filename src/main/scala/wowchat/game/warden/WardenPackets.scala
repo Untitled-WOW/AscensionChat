@@ -1,5 +1,8 @@
 package wowchat.game.warden
 
+/**
+  * Object containing constants for Warden protocol packets.
+  */
 object WardenPackets {
   // Client->Server
   val WARDEN_CMSG_MODULE_MISSING = 0x00

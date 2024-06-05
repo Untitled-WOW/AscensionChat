@@ -13,6 +13,7 @@
 
     <fileSets>
         <fileSet>
+            <!-- Include the built JAR file from the target directory -->
             <outputDirectory/>
             <directory>${project.build.directory}</directory>
             <includes>
@@ -21,6 +22,7 @@
             <fileMode>0644</fileMode>
         </fileSet>
         <fileSet>
+            <!-- Include configuration files from the resources directory -->
             <outputDirectory/>
             <directory>src/main/resources</directory>
             <includes>
@@ -31,6 +33,7 @@
         </fileSet>
     </fileSets>
     <files>
+        <!-- Include run scripts with proper line endings and permissions -->
         <file>
             <outputDirectory/>
             <source>src/main/resources/run.bat</source>

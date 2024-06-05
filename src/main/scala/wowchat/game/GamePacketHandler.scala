@@ -15,17 +15,76 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
+/**
+ * Represents a player in the game.
+ * @param name The name of the player.
+ * @param charClass The class of the player character.
+ */
 case class Player(name: String, charClass: Byte)
+
+/**
+ * Represents a member of a guild.
+ * @param name The name of the guild member.
+ * @param isOnline Indicates whether the guild member is currently online.
+ * @param charClass The class of the guild member's character.
+ * @param level The level of the guild member's character.
+ * @param zoneId The ID of the zone where the guild member's character is located.
+ * @param lastLogoff The timestamp of the guild member's last logoff.
+ */
 case class GuildMember(name: String, isOnline: Boolean, charClass: Byte, level: Byte, zoneId: Int, lastLogoff: Float)
+
+/**
+ * Represents a chat message in the game.
+ * @param guid The GUID of the message.
+ * @param tp The type of the message.
+ * @param message The content of the message.
+ * @param channel Optional channel where the message was sent.
+ * @param gmMessage Indicates if the message was sent by a game master.
+ */
 case class ChatMessage(guid: Long, tp: Byte, message: String, channel: Option[String] = None, gmMessage: Boolean = false)
+
+/**
+ * Represents a name query message.
+ * @param guid The GUID of the message.
+ * @param name The name to query.
+ * @param charClass The class of the character associated with the name.
+ */
 case class NameQueryMessage(guid: Long, name: String, charClass: Byte)
+
+/**
+ * Represents an authentication challenge message.
+ * @param sessionKey The session key for authentication.
+ * @param byteBuf The byte buffer containing the authentication challenge.
+ */
 case class AuthChallengeMessage(sessionKey: Array[Byte], byteBuf: ByteBuf)
+
+/**
+ * Represents a character enumeration message.
+ * @param name The name of the character.
+ * @param guid The GUID of the character.
+ * @param race The race of the character.
+ * @param guildGuid The GUID of the character's guild.
+ */
 case class CharEnumMessage(name: String, guid: Long, race: Byte, guildGuid: Long)
+
+/**
+ * Represents guild information.
+ * @param name The name of the guild.
+ * @param ranks A map containing guild ranks and their IDs.
+ */
 case class GuildInfo(name: String, ranks: Map[Int, String])
 
+/**
+ * Handler for game packets.
+ * @param realmId The ID of the realm.
+ * @param realmName The name of the realm.
+ * @param sessionKey The session key for authentication.
+ * @param gameEventCallback Callback for game events.
+ */
 class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends ChannelInboundHandlerAdapter with GameCommandHandler with GamePackets with StrictLogging {
 
+  // Addon information for authentication
   protected val addonInfo: Array[Byte] = Array(
     0x56, 0x01, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xCC, 0xBD, 0x0E, 0xC2, 0x30, 0x0C, 0x04, 0xE0, 0xF2,
     0x1E, 0xBC, 0x0C, 0x61, 0x40, 0x95, 0xC8, 0x42, 0xC3, 0x8C, 0x4C, 0xE2, 0x22, 0x0B, 0xC7, 0xA9,
@@ -38,6 +97,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     0xB5, 0x37, 0x90, 0x19, 0x66, 0x8F
   ).map(_.toByte)
 
+  // Variables for tracking game state
   protected var selfCharacterId: Option[Long] = None
   protected var languageId: Byte = _
   protected var inWorld: Boolean = false
@@ -51,12 +111,13 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected var lastRequestedGuildRoster: Long = _
   protected val executorService = Executors.newSingleThreadScheduledExecutor
 
-  // cannot use multimap here because need deterministic order
+  // Queued chat messages. Cannot use multimap here because need deterministic order
   private val queuedChatMessages = new mutable.HashMap[Long, mutable.ListBuffer[ChatMessage]]
   private var wardenHandler: Option[WardenHandler] = None
   private var receivedCharEnum = false
 
   override def channelInactive(ctx: ChannelHandlerContext): Unit = {
+    // Handle channel inactivity
     executorService.shutdown()
     this.ctx = None
     gameEventCallback.disconnected
@@ -71,6 +132,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   protected def runKeepAliveExecutor: Unit = {}
 
   private def runPingExecutor: Unit = {
+    // Execute periodic pings
     executorService.scheduleWithFixedDelay(new Runnable {
       var pingId = 0
 
@@ -88,6 +150,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   private def runGuildRosterExecutor: Unit = {
+    // Execute periodic updates for guild roster
     executorService.scheduleWithFixedDelay(() => {
       // Enforce updating guild roster only once per minute
       if (System.currentTimeMillis - lastRequestedGuildRoster >= 60000) {
@@ -96,6 +159,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }, 61, 61, TimeUnit.SECONDS)
   }
 
+  /**
+   * Builds a string representing guild members who are currently online, excluding the current character.
+   * @return A formatted string listing guild members online.
+   */
   def buildGuildiesOnline: String = {
     val characterName = Global.config.wow.character
 
@@ -110,6 +177,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       .mkString(getGuildiesOnlineMessage(false), ", ", "")
   }
 
+  /**
+   * Gets the message indicating the number of guild members currently online.
+   * @param isStatus Indicates whether the message is for status display.
+   * @return The message indicating the number of guild members online.
+   */
   def getGuildiesOnlineMessage(isStatus: Boolean): String = {
     val size = guildRoster.count(_._2.isOnline) - 1
     val guildies = s"guildie${if (size != 1) "s" else ""}"
@@ -125,25 +197,42 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Updates the guild status message in Discord.
+   */
   protected def updateGuildiesOnline: Unit = {
     Global.discord.changeGuildStatus(getGuildiesOnlineMessage(true))
   }
 
+  /**
+   * Queries the guild name from the server.
+   */
   protected def queryGuildName: Unit = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
     out.writeIntLE(guildGuid.toInt)
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
   }
 
+  /**
+   * Initiates an update of the guild roster.
+   */
   private def updateGuildRoster: Unit = {
     lastRequestedGuildRoster = System.currentTimeMillis
     ctx.get.writeAndFlush(buildGuildRosterPacket)
   }
 
+  /**
+   * Builds the packet for requesting guild roster update.
+   * @return The packet for requesting guild roster update.
+   */
   protected def buildGuildRosterPacket: Packet = {
     Packet(CMSG_GUILD_ROSTER)
   }
 
+  /**
+   * Sends a logout request to the server.
+   * @return An option containing the ChannelFuture if the request was sent successfully, None otherwise.
+   */
   def sendLogout: Option[ChannelFuture] = {
     ctx.flatMap(ctx => {
       if (ctx.channel.isActive) {
@@ -154,12 +243,25 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Sends a message to World of Warcraft.
+   * @param tp The type of the message.
+   * @param message The content of the message.
+   * @param target Optional target for the message.
+   */
   override def sendMessageToWow(tp: Byte, message: String, target: Option[String]): Unit = {
     ctx.fold(logger.error("Cannot send message! Not connected to WoW!"))(ctx => {
       ctx.writeAndFlush(buildChatMessage(tp, message.getBytes("UTF-8"), target.map(_.getBytes("UTF-8"))))
     })
   }
 
+  /**
+   * Builds a chat message packet.
+   * @param tp The type of the message.
+   * @param utf8MessageBytes The UTF-8 encoded bytes of the message.
+   * @param utf8TargetBytes The optional UTF-8 encoded bytes of the message target.
+   * @return The constructed chat message packet.
+   */
   protected def buildChatMessage(tp: Byte, utf8MessageBytes: Array[Byte], utf8TargetBytes: Option[Array[Byte]]): Packet = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
     out.writeIntLE(tp)
@@ -173,10 +275,18 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     Packet(CMSG_MESSAGECHAT, out)
   }
 
+  /**
+   * Sends a notification message to World of Warcraft.
+   * @param message The notification message to be sent.
+   */
   override def sendNotification(message: String): Unit = {
     sendMessageToWow(ChatEvents.CHAT_MSG_GUILD, message, None)
   }
 
+  /**
+   * Sends a name query to World of Warcraft for the specified GUID.
+   * @param guid The GUID for which the name query is to be sent.
+   */
   def sendNameQuery(guid: Long): Unit = {
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(8, 8)
@@ -185,6 +295,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Handles the /who command in World of Warcraft.
+   * @param arguments Optional arguments provided with the /who command.
+   * @return None if the /who command was successfully handled, otherwise returns a response string.
+   */
   override def handleWho(arguments: Option[String]): Option[String] = {
     if (arguments.isDefined) {
       val byteBuf = buildWhoMessage(arguments.get)
@@ -195,6 +310,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Handles the guild message of the day (GMOTD) command.
+   * @return The guild message of the day formatted with the notification configuration.
+   */
   override def handleGmotd(): Option[String] = {
     guildMotd.map(guildMotd => {
       val guildNotificationConfig = Global.config.guildConfig.notificationConfigs("motd")
@@ -205,6 +324,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Sends a guild invitation to the specified player.
+   * @param target The name of the player to whom the invitation is to be sent.
+   */
   protected def sendGuildInvite(target: String): Unit = {
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
@@ -217,6 +340,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Sends a guild kick request for the specified player.
+   * @param target The name of the player to be kicked from the guild.
+   */
   protected def sendGuildKick(target: String): Unit = {
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
@@ -229,9 +356,14 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Handles the guild invitation command.
+   * @param target The name of the player to whom the guild invitation is to be sent.
+   * @return None if the invitation was sent successfully, otherwise returns a response string.
+   */
   override def handleGuildInvite(target: String): Option[String] = {
     if (Global.config.discord.bannedInviteList.contains(target.toLowerCase)) {
-      Some(s"Player ${target} is banned.  Invite not sent.")
+      Some(s"Player ${target} is banned. Invite not sent.")
     } else {
       sendGuildInvite(target)
       None
@@ -239,11 +371,21 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Handles the guild kick command.
+   * @param target The name of the player to be kicked from the guild.
+   * @return None after sending the kick request.
+   */
   override def handleGuildKick(target: String): Option[String] = {
     sendGuildKick(target)
     None
   }
 
+  /**
+   * Builds a WHO message packet.
+   * @param name The name for which the WHO message is being constructed.
+   * @return The ByteBuf containing the WHO message packet.
+   */
   protected def buildWhoMessage(name: String): ByteBuf = {
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(64, 64)
     byteBuf.writeIntLE(0)  // level min
@@ -257,21 +399,34 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     byteBuf.writeIntLE(0) // strings count
   }
 
+  /**
+   * Handles the channel active event when the connection is established.
+   * @param ctx The ChannelHandlerContext associated with the active channel.
+   */
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     logger.info("Connected! Authenticating...")
     this.ctx = Some(ctx)
     Global.game = Some(this)
   }
 
+  /**
+   * Handles incoming packets received from the server.
+   * @param ctx The ChannelHandlerContext associated with the channel.
+   * @param msg The received packet.
+   */
   override def channelRead(ctx: ChannelHandlerContext, msg: scala.Any): Unit = {
     msg match {
       case msg: Packet =>
         channelParse(msg)
-        msg.byteBuf.release
+        msg.byteBuf.release // Release the ByteBuf to prevent memory leaks
       case msg => logger.error(s"Packet is instance of ${msg.getClass}")
     }
   }
 
+  /**
+   * Parses the incoming packet and delegates to the appropriate handler method based on the packet type.
+   * @param msg The received packet.
+   */
   protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case SMSG_AUTH_CHALLENGE => handle_SMSG_AUTH_CHALLENGE(msg)
@@ -295,6 +450,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Handles the SMSG_AUTH_CHALLENGE packet received from the server during the authentication process.
+   * @param msg The SMSG_AUTH_CHALLENGE packet.
+   */
   private def handle_SMSG_AUTH_CHALLENGE(msg: Packet): Unit = {
     val authChallengeMessage = parseAuthChallenge(msg)
 
@@ -303,6 +462,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     ctx.get.writeAndFlush(Packet(CMSG_AUTH_CHALLENGE, authChallengeMessage.byteBuf))
   }
 
+  /**
+   * Parses the SMSG_AUTH_CHALLENGE packet and constructs an authentication challenge message.
+   * @param msg The SMSG_AUTH_CHALLENGE packet.
+   * @return The constructed authentication challenge message.
+   */
   protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val account = Global.config.wow.account
 
@@ -329,6 +493,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     AuthChallengeMessage(sessionKey, out)
   }
 
+  /**
+   * Handles the SMSG_AUTH_RESPONSE packet received from the server after sending the authentication challenge.
+   * @param msg The SMSG_AUTH_RESPONSE packet.
+   */
   private def handle_SMSG_AUTH_RESPONSE(msg: Packet): Unit = {
     val code = parseAuthResponse(msg)
     if (code == AuthResponseCodes.AUTH_OK) {
@@ -341,6 +509,9 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Sends the SMSG_CHAR_ENUM request to the server.
+   */
   private def sendCharEnum: Unit = {
     // Only request char enum if previous requests were unsuccessful (due to failed warden reply)
     if (!receivedCharEnum) {
@@ -348,10 +519,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Parses the SMSG_AUTH_RESPONSE packet and retrieves the authentication response code.
+   * @param msg The SMSG_AUTH_RESPONSE packet.
+   * @return The authentication response code.
+   */
   protected def parseAuthResponse(msg: Packet): Byte = {
     msg.byteBuf.readByte
   }
 
+  /**
+   * Handles the SMSG_NAME_QUERY packet received from the server in response to a name query.
+   * @param msg The SMSG_NAME_QUERY packet.
+   */
   private def handle_SMSG_NAME_QUERY(msg: Packet): Unit = {
     val nameQueryMessage = parseNameQuery(msg)
 
@@ -365,6 +545,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Parses the SMSG_NAME_QUERY packet and constructs a NameQueryMessage.
+   * @param msg The SMSG_NAME_QUERY packet.
+   * @return The constructed NameQueryMessage.
+   */
   protected def parseNameQuery(msg: Packet): NameQueryMessage = {
     val guid = msg.byteBuf.readLongLE
     val name = msg.readString
@@ -376,6 +561,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     NameQueryMessage(guid, name, charClass)
   }
 
+  /**
+   * Handles the SMSG_CHAR_ENUM packet received from the server after authentication.
+   * @param msg The SMSG_CHAR_ENUM packet.
+   */
   private def handle_SMSG_CHAR_ENUM(msg: Packet): Unit = {
     if (receivedCharEnum) {
       // Do not parse char enum again
@@ -396,6 +585,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  /**
+   * Parses the SMSG_CHAR_ENUM packet and retrieves the character information.
+   * @param msg The SMSG_CHAR_ENUM packet.
+   * @return An option containing the character information if found, None otherwise.
+   */
   protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
     val characterBytes = Global.config.wow.character.toLowerCase.getBytes("UTF-8")
     val charactersNum = msg.byteBuf.readByte
@@ -433,10 +627,18 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     None
   }
 
+  /**
+   * Writes the player login information to the ByteBuf.
+   * @param out The ByteBuf to write to.
+   */
   protected def writePlayerLogin(out: ByteBuf): Unit = {
     out.writeLongLE(selfCharacterId.get)
   }
 
+  /**
+   * Handles the SMSG_LOGIN_VERIFY_WORLD packet received from the server after joining the world.
+   * @param msg The SMSG_LOGIN_VERIFY_WORLD packet.
+   */
   private def handle_SMSG_LOGIN_VERIFY_WORLD(msg: Packet): Unit = {
     // for some reason some servers send this packet more than once.
     if (inWorld) {
@@ -471,16 +673,31 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
       }
   }
 
+  /**
+   * Writes the join channel information to the ByteBuf.
+   * @param out The ByteBuf to write to.
+   * @param id The channel ID.
+   * @param utf8ChannelBytes The UTF-8 encoded channel name.
+   */
   protected def writeJoinChannel(out: ByteBuf, id: Int, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeBytes(utf8ChannelBytes)
     out.writeByte(0)
     out.writeByte(0)
   }
 
+  /**
+   * Handles the SMSG_GUILD_QUERY packet received from the server.
+   * @param msg The SMSG_GUILD_QUERY packet.
+   */
   private def handle_SMSG_GUILD_QUERY(msg: Packet): Unit = {
     guildInfo = handleGuildQuery(msg)
   }
 
+  /**
+   * Parses the SMSG_GUILD_QUERY packet and constructs a GuildInfo object.
+   * @param msg The SMSG_GUILD_QUERY packet.
+   * @return The constructed GuildInfo object.
+   */
   protected def handleGuildQuery(msg: Packet): GuildInfo = {
     msg.byteBuf.skipBytes(4)
     val name = msg.readString
@@ -495,6 +712,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     GuildInfo(name, ranks)
   }
 
+  /**
+   * Handles the SMSG_GUILD_EVENT packet received from the server.
+   * @param msg The SMSG_GUILD_EVENT packet.
+   */
   private def handle_SMSG_GUILD_EVENT(msg: Packet): Unit = {
     val event = msg.byteBuf.readByte
     val numStrings = msg.byteBuf.readByte
@@ -503,6 +724,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     handleGuildEvent(event, messages)
   }
 
+  /**
+   * Handles guild events received from the server.
+   * @param event The guild event type.
+   * @param messages The messages associated with the event.
+   */
   protected def handleGuildEvent(event: Byte, messages: Seq[String]): Unit = {
     // ignore empty messages
     if (messages.forall(_.trim.isEmpty)) {
@@ -556,12 +782,21 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     updateGuildRoster
   }
 
+  /**
+   * Handles the SMSG_GUILD_ROSTER packet received from the server.
+   * @param msg The SMSG_GUILD_ROSTER packet.
+   */
   private def handle_SMSG_GUILD_ROSTER(msg: Packet): Unit = {
     guildRoster.clear
     guildRoster ++= parseGuildRoster(msg)
     updateGuildiesOnline
   }
 
+  /**
+   * Parses the SMSG_GUILD_ROSTER packet and constructs a map of guild members.
+   * @param msg The SMSG_GUILD_ROSTER packet.
+   * @return A map containing guild members.
+   */
   protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val count = msg.byteBuf.readIntLE
     guildMotd = Some(msg.readString)
@@ -588,11 +823,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }).toMap
   }
 
+  /**
+   * Handles the SMSG_MESSAGECHAT packet received from the server.
+   * @param msg The SMSG_MESSAGECHAT packet.
+   */
   protected def handle_SMSG_MESSAGECHAT(msg: Packet): Unit = {
 //    logger.debug(s"RECV CHAT: ${ByteUtils.toHexString(msg.byteBuf, true, true)}")
     parseChatMessage(msg).foreach(sendChatMessage)
   }
 
+  /**
+   * Sends a chat message to Discord.
+   * @param chatMessage The chat message to send.
+   */
   protected def sendChatMessage(chatMessage: ChatMessage): Unit = {
     if (chatMessage.guid == 0) {
       Global.discord.sendMessageFromWow(None, chatMessage.message, chatMessage.tp, None, chatMessage.gmMessage)
@@ -608,6 +851,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Parses a chat message received from the server.
+   * @param msg The SMSG_MESSAGECHAT packet containing the chat message.
+   * @return An optional ChatMessage object if parsing is successful.
+   */
   protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val tp = msg.byteBuf.readByte
 
@@ -650,6 +898,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     Some(ChatMessage(guid, tp, txt, channelName))
   }
 
+  /**
+   * Handles the SMSG_CHANNEL_NOTIFY packet received from the server.
+   * @param msg The SMSG_CHANNEL_NOTIFY packet.
+   */
   private def handle_SMSG_CHANNEL_NOTIFY(msg: Packet): Unit = {
     val id = msg.byteBuf.readByte
     val channelName = msg.readString
@@ -678,16 +930,29 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Handles the SMSG_NOTIFICATION packet received from the server.
+   * @param msg The SMSG_NOTIFICATION packet.
+   */
   private def handle_SMSG_NOTIFICATION(msg: Packet): Unit = {
     logger.info(s"Notification: ${parseNotification(msg)}")
   }
 
+  /**
+   * Parses the SMSG_NOTIFICATION packet and retrieves the notification message.
+   * @param msg The SMSG_NOTIFICATION packet.
+   * @return The notification message.
+   */
   protected def parseNotification(msg: Packet): String = {
     msg.readString
   }
 
-  // This is actually really hard to map back to a specific request
-  // because the packet doesn't include a cookie/id/requested name if none found
+  /**
+   * Handles the SMSG_WHO packet received from the server.
+   * @param msg The SMSG_WHO packet.
+   * This is actually really hard to map back to a specific request
+   * because the packet doesn't include a cookie/id/requested name if none found
+   */
   private def handle_SMSG_WHO(msg: Packet): Unit = {
     val displayResults = parseWhoResponse(msg)
     // Try to find exact match
@@ -731,6 +996,11 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Parses the SMSG_WHO packet and retrieves the list of players.
+   * @param msg The SMSG_WHO packet.
+   * @return The list of players parsed from the packet.
+   */
   protected def parseWhoResponse(msg: Packet): Seq[WhoResponse] = {
     val displayCount = msg.byteBuf.readIntLE
     val matchCount = msg.byteBuf.readIntLE
@@ -745,7 +1015,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
         val cls = Classes.valueOf(msg.byteBuf.readIntLE.toByte)
         val race = Races.valueOf(msg.byteBuf.readIntLE.toByte)
         val gender = if (WowChatConfig.getExpansion != WowExpansion.Vanilla) {
-          Some(Genders.valueOf(msg.byteBuf.readByte)) // tbc/wotlk only
+          Some(Genders.valueOf(msg.byteBuf.readByte)) // TBC/WotLK only
         } else {
           None
         }
@@ -763,6 +1033,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Handles the SMSG_SERVER_MESSAGE packet received from the server.
+   * @param msg The SMSG_SERVER_MESSAGE packet.
+   */
   private def handle_SMSG_SERVER_MESSAGE(msg: Packet): Unit = {
     val tp = msg.byteBuf.readIntLE
     val txt = msg.readString
@@ -776,11 +1050,19 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     sendChatMessage(ChatMessage(0, ChatEvents.CHAT_MSG_SYSTEM, message, None))
   }
 
+  /**
+   * Handles the SMSG_INVALIDATE_PLAYER packet received from the server.
+   * @param msg The SMSG_INVALIDATE_PLAYER packet.
+   */
   private def handle_SMSG_INVALIDATE_PLAYER(msg: Packet): Unit = {
     val guid = msg.byteBuf.readLongLE
     playerRoster.remove(guid)
   }
 
+  /**
+   * Handles the SMSG_WARDEN_DATA packet received from the server.
+   * @param msg The SMSG_WARDEN_DATA packet.
+   */
   private def handle_SMSG_WARDEN_DATA(msg: Packet): Unit = {
     if (Global.config.wow.platform == Platform.Windows) {
       logger.error("WARDEN ON WINDOWS IS NOT SUPPORTED! BOT WILL SOON DISCONNECT! TRY TO USE PLATFORM MAC!")
@@ -803,6 +1085,10 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     }
   }
 
+  /**
+   * Initializes the WardenHandler for handling warden data.
+   * @return The initialized WardenHandler.
+   */
   protected def initializeWardenHandler: WardenHandler = {
     new WardenHandler(sessionKey)
   }

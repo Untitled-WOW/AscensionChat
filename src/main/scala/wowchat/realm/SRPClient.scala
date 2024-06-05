@@ -19,9 +19,9 @@ package wowchat.realm
 import java.security.MessageDigest
 
 /**
-  * This class was taken from JaNGOS project and ported to Scala.
-  * Look at JaNGOSAuth for further documentation about the algorithm used here
-  *
+  * This class implements the Secure Remote Password (SRP) client-side algorithm.
+  * The algorithm was originally developed for the JaNGOS project and ported to Scala.
+  * For further documentation about the algorithm, refer to JaNGOSAuth:
   * https://github.com/Warkdev/JaNGOSAuth
   */
 class SRPClient {
@@ -42,6 +42,11 @@ class SRPClient {
 
   var md: MessageDigest = MessageDigest.getInstance("SHA1")
 
+  /**
+    * Generates the hash of the logon proof.
+    *
+    * @return The hash of the logon proof as an array of bytes.
+    */
   def generateHashLogonProof: Array[Byte] = {
     md.update(A.asByteArray(32))
     md.update(M.asByteArray(20, false))
@@ -50,6 +55,16 @@ class SRPClient {
     md.digest()
   }
 
+  /**
+    * Performs the first step of the SRP protocol.
+    *
+    * @param account  The user account.
+    * @param password The user's password.
+    * @param B        The server's public value.
+    * @param g        The generator.
+    * @param N        The prime modulus.
+    * @param s        The salt value.
+    */
   def step1(account: Array[Byte], password: String,
             B: BigNumber, g: BigNumber, N: BigNumber, s: BigNumber): Unit = {
     val passwordUpper = password.toUpperCase

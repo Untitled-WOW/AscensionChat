@@ -8,6 +8,9 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 
+/**
+  * Decoder for decoding game packets.
+  */
 class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with StrictLogging {
 
   protected val HEADER_LENGTH = 4
@@ -15,6 +18,9 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
   private var size = 0
   private var id = 0
 
+  /**
+    * Decodes incoming bytes into game packets.
+    */
   override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
     if (in.readableBytes < HEADER_LENGTH) {
       return
@@ -51,12 +57,18 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
     id = 0
   }
 
+  /**
+    * Parses the game header from the input.
+    */
   def parseGameHeader(in: ByteBuf): (Int, Int) = {
     val size = in.readShort - 2
     val id = in.readShortLE
     (id, size)
   }
 
+  /**
+    * Parses the encrypted game header from the input.
+    */
   def parseGameHeaderEncrypted(in: ByteBuf, crypt: GameHeaderCrypt): (Int, Int) = {
     val header = new Array[Byte](HEADER_LENGTH)
     in.readBytes(header)
@@ -66,7 +78,10 @@ class GamePacketDecoder extends ByteToMessageDecoder with GamePackets with Stric
     (id, size)
   }
 
-  // vanilla has no compression. starts in cata/mop
+  /**
+    * Vanilla has no compression. Starts in Cata/MoP
+    * Decompresses the input byte buffer. 
+    */
   def decompress(id: Int, in: ByteBuf): (Int, ByteBuf) = {
     (id, in)
   }

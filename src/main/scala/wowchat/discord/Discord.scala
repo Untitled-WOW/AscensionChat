@@ -19,9 +19,16 @@ import wowchat.game.GamePackets
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+/**
+  * Represents the Discord client for interacting with the Discord API.
+  * @param discordConnectionCallback The callback for handling common Discord connection events.
+  */
 class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
   with GamePackets with StrictLogging {
 
+  /**
+    * The JDA instance for interfacing with the Discord API.
+    */
   private val jda = JDABuilder
     .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS)
     .setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -29,24 +36,55 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     .addEventListeners(this)
     .build
 
+  /**
+    * The message resolver for resolving various elements in Discord messages.
+    */
   private val messageResolver = MessageResolver(jda)
 
+  /**
+    * The last set status of the Discord client.
+    */
   private var lastStatus: Option[Activity] = None
+
+  /**
+    * Indicates whether it's the first connection to Discord.
+    */
   private var firstConnect = true
 
+  /**
+    * Changes the status of the Discord client.
+    * @param gameType The type of activity to set.
+    * @param message The message associated with the activity.
+    */
   def changeStatus(gameType: ActivityType, message: String): Unit = {
     lastStatus = Some(Activity.of(gameType, message))
     jda.getPresence.setActivity(lastStatus.get)
   }
 
+  /**
+    * Changes the status of the Discord client to watching a guild.
+    * @param message The message associated with the guild status.
+    */
   def changeGuildStatus(message: String): Unit = {
     changeStatus(ActivityType.WATCHING, message)
   }
 
+  /**
+    * Changes the status of the Discord client to the realm status.
+    * @param message The message associated with the realm status.
+    */
   def changeRealmStatus(message: String): Unit = {
     changeStatus(ActivityType.DEFAULT, message)
   }
 
+  /**
+    * Sends a message from World of Warcraft to Discord.
+    * @param from The sender's name.
+    * @param message The message to send.
+    * @param wowType The type of message.
+    * @param wowChannel The channel in WoW.
+    * @param gmMessage Indicates if the message is a GM message.
+    */
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String], gmMessage: Boolean = false): Unit = {
     Global.wowToDiscord.get((wowType, wowChannel.map(_.toLowerCase))).foreach(discordChannels => {
       val parsedLinks =
@@ -102,6 +140,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     })
   }
 
+  /**
+    * Sends a notification to a guild channel.
+    * @param eventKey The key associated with the event.
+    * @param message The message to send.
+    */
   def sendGuildNotification(eventKey: String, message: String): Unit = {
     Global.guildEventsToDiscord
       .getOrElse(eventKey, Global.wowToDiscord.getOrElse(
@@ -114,6 +157,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       })
   }
 
+  /**
+    * Sends an achievement notification to guild channels.
+    * @param name The name of the player.
+    * @param achievementId The ID of the achievement.
+    */
   def sendAchievementNotification(name: String, achievementId: Int): Unit = {
     val notificationConfig = Global.config.guildConfig.notificationConfigs("achievement")
     if (!notificationConfig.enabled) {
@@ -140,7 +188,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         Global.wowToDiscord.clear
         Global.guildEventsToDiscord.clear
 
-        // getNext seq of needed channels from config
+        // Get needed channels from config
         val configChannels = Global.config.channels.map(channelConfig => {
           channelConfig.discord.channel.toLowerCase -> channelConfig
         })
@@ -153,7 +201,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             configChannelsNames.contains(channel.getId)
           )
 
-        // build directional maps
+        // Build directional maps
         eligibleDiscordChannels.foreach(channel => {
           configChannels
             .filter {
@@ -180,7 +228,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             }
           })
 
-        // build guild notification maps
+        // Build guild notification maps
         discordTextChannels.foreach(channel => {
         Global.config.guildConfig.notificationConfigs
             .filter {
@@ -222,17 +270,17 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   }
 
   override def onMessageReceived(event: MessageReceivedEvent): Unit = {
-    // ignore messages received from self
+    // Ignore messages received from self
     if (event.getAuthor.getIdLong == jda.getSelfUser.getIdLong) {
       return
     }
 
-    // ignore messages from non-text channels
+    // Ignore messages from non-text channels
     if (event.getChannelType != ChannelType.TEXT) {
       return
     }
 
-    // ignore non-default messages
+    // Ignore non-default messages
     val messageType = event.getMessage.getType
     if (messageType != MessageType.DEFAULT && messageType != MessageType.INLINE_REPLY) {
       return
@@ -249,7 +297,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 //    logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
 
     if (!CommandHandler(channel, message)) {
-      // send to all configured wow channels
+      // Send to all configured WoW channels
       Global.discordToWow
         .get(channelName)
         .fold(Global.discordToWow.get(channelId))(Some(_))
@@ -326,6 +374,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       }
     }
 
+    // Add remaining part of the message
     if (tmp.nonEmpty) {
       retArr += tmp
     }

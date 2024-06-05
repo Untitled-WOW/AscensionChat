@@ -2,6 +2,11 @@ package wowchat.game.warden
 
 import java.security.MessageDigest
 
+/**
+  * Class for generating pseudo-random bytes using SHA1 algorithm.
+  *
+  * @param sessionKey The session key used for initialization.
+  */
 class SHA1Randx(sessionKey: Array[Byte]) {
 
   private val md = MessageDigest.getInstance("SHA1")
@@ -17,6 +22,9 @@ class SHA1Randx(sessionKey: Array[Byte]) {
   private var index = 0
   fillUp
 
+  /**
+    * Fills up the buffer with new pseudo-random bytes.
+    */
   private def fillUp: Unit = {
     md.update(o1)
     md.update(o0)
@@ -26,6 +34,12 @@ class SHA1Randx(sessionKey: Array[Byte]) {
     index = 0
   }
 
+  /**
+    * Generates pseudo-random bytes of the specified size.
+    *
+    * @param size The size of the byte array to generate.
+    * @return The generated pseudo-random bytes.
+    */
   def generate(size: Int): Array[Byte] = {
     (0 until size).map(i => {
       if (index >= o0.length) {
