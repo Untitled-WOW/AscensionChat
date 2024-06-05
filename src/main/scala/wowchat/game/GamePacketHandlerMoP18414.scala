@@ -320,7 +320,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
 
     val guids = new Array[Array[Byte]](charactersNum)
     val guildGuids = new Array[Array[Byte]](charactersNum)
-    val nameLenghts = new Array[Int](charactersNum)
+    val nameLengths = new Array[Int](charactersNum)
 
     (0 until charactersNum).foreach(i => {
       guids(i) = new Array[Byte](8)
@@ -332,7 +332,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.readBits(2)
       msg.readBitSeq(guids(i), 6)
       msg.readBitSeq(guildGuids(i), 6)
-      nameLenghts(i) = msg.readBits(6)
+      nameLengths(i) = msg.readBits(6)
       msg.readBitSeq(guids(i), 1)
       msg.readBitSeq(guildGuids(i), 1, 0)
       msg.readBitSeq(guids(i), 4)
@@ -348,7 +348,7 @@ class GamePacketHandlerMoP18414(realmId: Int, realmName: String, sessionKey: Arr
       msg.readXorByteSeq(guids(i), 1)
       msg.byteBuf.skipBytes(2) // slot + hairstyle
       msg.readXorByteSeq(guildGuids(i), 2, 0, 6)
-      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
+      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
       msg.readXorByteSeq(guildGuids(i), 3)
       msg.byteBuf.skipBytes(10) // x + unkn + face + class
       msg.readXorByteSeq(guildGuids(i), 5)

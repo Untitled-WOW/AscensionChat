@@ -8,9 +8,22 @@ import wowchat.common._
 
 import scala.util.Random
 
+/**
+ * A class that handles game packets for Cataclysm version 15595.
+ *
+ * @param realmId            The ID of the realm.
+ * @param realmName          The name of the realm.
+ * @param sessionKey         The session key for the game.
+ * @param gameEventCallback A callback for game events.
+ */
 class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandlerWotLK(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsCataclysm15595 {
 
+  /**
+   * Parses the channel message packet.
+   *
+   * @param msg The packet to parse.
+   */
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case WOW_CONNECTION => handle_WOW_CONNECTION(msg)
@@ -18,6 +31,14 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     }
   }
 
+  /**
+   * Builds a chat message packet.
+   *
+   * @param tp               The type of chat message.
+   * @param utf8MessageBytes The UTF-8 encoded message bytes.
+   * @param utf8TargetBytes  Optional UTF-8 encoded target bytes.
+   * @return A packet containing the chat message.
+   */
   override def buildChatMessage(tp: Byte, utf8MessageBytes: Array[Byte], utf8TargetBytes: Option[Array[Byte]]): Packet = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(128, 8192)
     out.writeIntLE(languageId)
@@ -26,7 +47,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     })
     writeBits(out, utf8MessageBytes.length, 9)
     flushBits(out)
-    // note for whispers (if the bot ever supports them, the order is opposite, person first then msg)
+    // Note: for whispers (if/when supported), the order is opposite: person first, then message
     out.writeBytes(utf8MessageBytes)
     if (utf8TargetBytes.isDefined) {
       out.writeBytes(utf8TargetBytes.get)
@@ -34,6 +55,12 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     Packet(getChatPacketFromType(tp), out)
   }
 
+  /**
+   * Gets the chat packet ID based on the message type.
+   *
+   * @param tp The type of chat message.
+   * @return The packet ID.
+   */
   protected def getChatPacketFromType(tp: Byte): Int = {
     tp match {
       case ChatEvents.CHAT_MSG_CHANNEL => CMSG_MESSAGECHAT_CHANNEL
@@ -47,6 +74,12 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     }
   }
 
+  /**
+   * Parses the authentication challenge packet.
+   *
+   * @param msg The packet to parse.
+   * @return An authentication challenge message.
+   */
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val account = Global.config.wow.account
 
@@ -101,26 +134,38 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     AuthChallengeMessage(sessionKey, out)
   }
 
+  /**
+   * Parses the authentication response packet.
+   *
+   * @param msg The packet to parse.
+   * @return The authentication response byte.
+   */
   override protected def parseAuthResponse(msg: Packet): Byte = {
     msg.byteBuf.skipBytes(16)
     super.parseAuthResponse(msg)
   }
 
+  /**
+   * Parses the character enumeration packet.
+   *
+   * @param msg The packet to parse.
+   * @return An optional CharEnumMessage if the character matches the configured character.
+   */
   override protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
     val characterBytes = Global.config.wow.character.toLowerCase.getBytes("UTF-8")
-    msg.readBits(24) // unkn
+    msg.readBits(24) // unknown
     val charactersNum = msg.readBits(17)
 
     val guids = new Array[Array[Byte]](charactersNum)
     val guildGuids = new Array[Array[Byte]](charactersNum)
-    val nameLenghts = new Array[Int](charactersNum)
+    val nameLengths = new Array[Int](charactersNum)
 
     (0 until charactersNum).foreach(i => {
       guids(i) = new Array[Byte](8)
       guildGuids(i) = new Array[Byte](8)
       msg.readBitSeq(guids(i), 3)
       msg.readBitSeq(guildGuids(i), 1, 7, 2)
-      nameLenghts(i) = msg.readBits(7)
+      nameLengths(i) = msg.readBits(7)
       msg.readBitSeq(guids(i), 4, 7)
       msg.readBitSeq(guildGuids(i), 3)
       msg.readBitSeq(guids(i), 5)
@@ -150,7 +195,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       msg.byteBuf.skipBytes(9)
       msg.readXorByteSeq(guids(i), 7)
       msg.byteBuf.skipBytes(1)
-      val name = msg.byteBuf.readCharSequence(nameLenghts(i), Charset.forName("UTF-8")).toString
+      val name = msg.byteBuf.readCharSequence(nameLengths(i), Charset.forName("UTF-8")).toString
       msg.byteBuf.skipBytes(1)
       msg.readXorByteSeq(guids(i), 0, 2)
       msg.readXorByteSeq(guildGuids(i), 1, 7)
@@ -171,12 +216,24 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     None
   }
 
+  /**
+   * Writes the player login packet.
+   *
+   * @param out The buffer to write to.
+   */
   override protected def writePlayerLogin(out: ByteBuf): Unit = {
     val bytes = ByteUtils.longToBytesLE(selfCharacterId.get)
     writeBitSeq(out, bytes, 2, 3, 0, 6, 4, 5, 1, 7)
     writeXorByteSeq(out, bytes, 2, 7, 0, 3, 5, 6, 1, 4)
   }
 
+  /**
+   * Writes the join channel packet.
+   *
+   * @param out             The buffer to write to.
+   * @param id              The ID of the channel.
+   * @param utf8ChannelBytes The UTF-8 encoded channel bytes.
+   */
   override protected def writeJoinChannel(out: ByteBuf, id: Int, utf8ChannelBytes: Array[Byte]): Unit = {
     out.writeIntLE(id) // channel id
     writeBit(out, 0) // has voice
@@ -188,6 +245,9 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     out.writeBytes(utf8ChannelBytes)
   }
 
+  /**
+   * Queries the guild name.
+   */
   override protected def queryGuildName: Unit = {
     val out = PooledByteBufAllocator.DEFAULT.buffer(16, 16)
     out.writeLongLE(guildGuid)
@@ -195,11 +255,22 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     ctx.get.writeAndFlush(Packet(CMSG_GUILD_QUERY, out))
   }
 
+  /**
+   * Handles the guild query packet.
+   *
+   * @param msg The packet to handle.
+   * @return The guild information.
+   */
   override protected def handleGuildQuery(msg: Packet): GuildInfo = {
     msg.byteBuf.skipBytes(4) // first part of guid, the vanilla handler can handle the rest
     super.handleGuildQuery(msg)
   }
 
+  /**
+   * Builds the guild roster packet.
+   *
+   * @return The guild roster packet.
+   */
   override protected def buildGuildRosterPacket: Packet = {
     // it apparently sends 2 masked guids,
     // but in fact MaNGOS does not do anything with them so we can just send 0s
@@ -208,6 +279,12 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     Packet(CMSG_GUILD_ROSTER, byteBuf)
   }
 
+  /**
+   * Parses the guild roster packet.
+   *
+   * @param msg The packet to parse.
+   * @return A map of guild members.
+   */
   override protected def parseGuildRoster(msg: Packet): Map[Long, GuildMember] = {
     val motdLength = msg.readBits(11)
     val count = msg.readBits(18)
@@ -233,7 +310,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
       val charClass = msg.byteBuf.readByte
       msg.byteBuf.skipBytes(4) // unkn
       msg.readXorByteSeq(guids(i), 0)
-      msg.byteBuf.skipBytes(40) // weekly activity, achievments, professions
+      msg.byteBuf.skipBytes(40) // weekly activity, achievements, professions
       msg.readXorByteSeq(guids(i), 2)
       val flags = msg.byteBuf.readByte
       val zoneId = msg.byteBuf.readIntLE
@@ -262,11 +339,22 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     guildRosterMap
   }
 
+  /**
+   * Parses the notification packet.
+   *
+   * @param msg The packet to parse.
+   * @return The parsed notification string.
+   */
   override protected def parseNotification(msg: Packet): String = {
     val length = msg.readBits(13)
     msg.byteBuf.readCharSequence(length, Charset.forName("UTF-8")).toString
   }
 
+  /**
+   * Handles the WOW_CONNECTION packet.
+   *
+   * @param msg The packet to handle.
+   */
   private def handle_WOW_CONNECTION(msg: Packet): Unit = {
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(48, 48)
 
@@ -276,7 +364,7 @@ class GamePacketHandlerCataclysm15595(realmId: Int, realmName: String, sessionKe
     ctx.get.writeAndFlush(Packet(WOW_CONNECTION, byteBuf))
   }
 
-  // bit manipulation for cata+
+  // Bit manipulation for Cata+
   private var bitPosition = 8
   private var byte = 0
 
