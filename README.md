@@ -107,7 +107,7 @@ Even though this bot does not do anything malicious, some servers may not like a
 
 ## Run
 
-1. Download the latest ready-made binary from GitHub releases: <https://github.com/NotYourAverageGamer/AscensionChat/releases/latest>
+1. Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) ready-made binary from the GitHub [releases](https://github.com/NotYourAverageGamer/AscensionChat/releases)
 
    - **Make sure you have a Java Runtime Environment (JRE) 1.8 or higher installed on your system!**
 
@@ -139,5 +139,5 @@ Even though this bot does not do anything malicious, some servers may not like a
 
 ## Updating
 
-- Download the [latest](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `.jar` and replace the one in your current `ascensionchat` folder. Alternatively, download the [latest](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `.zip` file; but be careful not to replace your `ascensionchat.conf`!
-  - In the case that there has been an update to the `ascension.conf` file, be sure to have a copy of your login information to make the update process smoother.
+- Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.jar` and replace the one in your current `ascensionchat` folder. Alternatively, download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.zip` file; but be careful not to replace your `ascensionchat.conf`!
+  - Before updating your `ascension.conf` file, make sure to save a copy of your current `.conf` file. This will allow you to easily transfer your login details to the new config, making the update process smoother.
