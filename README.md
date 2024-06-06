@@ -2,11 +2,11 @@
 
 AscensionChat is a Discord integration chat bot for the **Ascension Project**, forked from **WoWChat** by fjaros. My _(NotYourAverageGamer)_ fork also contains code sourced from **szyler** and **xan-asc** — thank you all!
 
-**Note:** This fork has been modified for use with the Ascension Project. Some changes will need to be made if you want to use this with other servers. It does NOT support WoW Classic or Retail servers.
+**Note:** This fork has been modified for use with the Ascension Project. Changes will need to be made if you want to use this with other servers _(perhaps take a look at the forks mentioned above)_. It does NOT support WoW Classic or Retail servers.
 
 **New Requirement:** Due to Discord changes, you must check `PRESENCE INTENT` and `SERVER MEMBERS INTENT` under `Privileged Gateway Intents` in the Discord developer portal.
 
-Currently supported version:
+Currently supported version of this fork:
 
 - Ascension WoW 3.3.5
 
@@ -14,12 +14,12 @@ Currently supported version:
 
 - **Clientless**: Does not need the WoW Client to be open to run
 - **Seamless Chat Integration**: Integrates channels between WoW and Discord
-  - Guild chat, Officer chat, Local chat, Emotes, Custom Channels (Local chat, Emotes, and Custom Channels are disabled by default)
-  - In-game links (items, spells, etc.) are displayed as links to the Ascension Database (db.ascension.gg)
+  - Guild chat, Officer chat, Local chat, Emotes, Custom Channels _(Local chat, Emotes, and Custom Channels are disabled by default)_
+  - In-game links _(items, spells, etc.)_ are displayed as links to the Ascension Database _(db.ascension.gg)_
   - Configurable message format
 - **Smart Tagging**:
   - Tag players on Discord from WoW using `@and_part_or_all_of_their_name`
-  - Tag `@here`, `@everyone`, and `"@Even Roles With Spaces"` (include quotes around them)
+  - Tag `@here`, `@everyone`, and `"@Even Roles With Spaces"` _(include quotes around them)_
 - **Custom Commands**:
   - Check who is online in your guild with `?who`
   - Query other players in the world
@@ -34,7 +34,7 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
 
 Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the **_account_**! Make a new account just for the bot. **_YOU HAVE BEEN WARNED!_**
 
-#### Example 1 (before fixing achievement whitespace)
+#### Example 1 _(before fixing achievement whitespace)_
 
 ![gd-echoes](https://raw.githubusercontent.com/fjaros/wowchat/master/images/example1.png)
 
@@ -63,7 +63,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      - `banned_invite_list`: A list of character names that cannot be used with `?invite`
      - `enable_commands_channels`: A list of channels for which to allow commands. If not specified or empty, the bot will allow commands from all channels.
    - **WoW** section:
-     - `platform`: Leave as `Mac` unless your target server has Warden (anticheat) disabled AND it is blocking/has disabled Mac logins. In this case, put `Windows`.
+     - `platform`: Leave as `Mac` unless your target server has Warden _(anticheat)_ disabled AND it is blocking/has disabled Mac logins. In this case, put `Windows`.
        - **NOTE:** For Ascension, I cannot get past character selection if `Mac` is set on MacOS. Having `platform=Windows` seems to work without issue.
      - `locale`: Optionally specify a locale if you want to join locale-specific global channels. **enUS** is the default locale.
      - `enable_server_motd`: Set to `0` to ignore sending the server's MotD. Set to `1` to send the server's MotD as a SYSTEM message.
