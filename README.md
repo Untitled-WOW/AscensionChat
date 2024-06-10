@@ -1,10 +1,10 @@
 # AscensionChat
 
-AscensionChat is a Discord integration chat bot for the **Ascension Project**, forked from **WoWChat** by fjaros. My _(NotYourAverageGamer)_ fork also contains code sourced from **szyler** and **xan-asc** — thank you all!
+AscensionChat is a Discord integration chat bot for **Project Ascension**, originally forked from **WoWChat** by fjaros. My _(NotYourAverageGamer)_ fork also contains code sourced from **szyler** and **xan-asc** — thank you all!
 
 **Note:** This fork has been modified for use with the Ascension Project. While the code is still technically there, changes will need to be made if you want to use this with other servers _(perhaps take a look at one of the forks mentioned above, which should provide a better starting point)_. It does NOT support WoW Classic or Retail servers.
 
-**New Requirement:** Due to Discord changes, you must check `PRESENCE INTENT` and `SERVER MEMBERS INTENT` under the `Privileged Gateway Intents` section in the Discord developer portal.
+**New Requirement:** Due to Discord changes, you must check `PRESENCE INTENT`, `SERVER MEMBERS INTENT` AND `MESSAGE CONTENT INTENT` under the `Privileged Gateway Intents` section in the Discord developer portal.
 
 Currently supported version of this fork:
 
@@ -51,8 +51,8 @@ Even though this bot does not do anything malicious, some servers may not like a
    - On the left, click the `Bot` tab
    - Add a Bot
    - Disable the `Public Bot` option
-   - Enable `PRESENCE INTENT` and `SERVER MEMBERS INTENT` under `Privileged Gateway Intents`. **This is important! Without it, your bot will not work!**
-   - Underneath where it says `TOKEN`, click `Copy`. This is what Ascension Chat will use to log into Discord.
+   - Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`. **This is important! Without it, your bot will not work!**
+   - Underneath where it says `TOKEN`, click `Copy`. _(If you can't see a copy option, click reset then copy)_ This is what Ascension Chat will use to log into Discord.
 2. Configure AscensionChat by opening `ascensionchat.conf` in your text editor of choice. You can also create your own file using the supplied `ascensionchat.conf` as a template.
 
    - **Discord** section:
