@@ -6,6 +6,7 @@ import wowchat.common.{CommonConnectionCallback, Global, ReconnectDelay, WowChat
 import wowchat.discord.Discord
 import wowchat.game.GameConnector
 import wowchat.realm.{RealmConnectionCallback, RealmConnector}
+
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.nio.NioEventLoopGroup
 

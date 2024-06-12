@@ -123,7 +123,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
               .replace("%target", wowChannel.getOrElse(""))
 
             val filter = shouldFilter(channelConfig.filters, formatted)
-            logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
+            logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord (${channel.getName}): $formatted")
             if (!filter) {
               channel.sendMessage(formatted).queue()
             }
@@ -152,7 +152,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         ).map(_._1)
       )
       .foreach(channel => { // TODO: Add a line with "check if variable enabled"
-        logger.info(s"WoW->Discord(${channel.getName}) $message")
+        logger.info(s"WoW->Discord (${channel.getName}): $message")
         channel.sendMessage(message).queue()
       })
   }
