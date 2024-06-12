@@ -13,7 +13,7 @@ import scala.io.Source
 
 object WoWChat extends StrictLogging {
 
-  private val RELEASE = "v24.6.3"
+  private val RELEASE = Source.fromResource("version.properties").getLines.next().split("=")(1).trim
 
   /** Main entry point of the application. */
   def main(args: Array[String]): Unit = {
