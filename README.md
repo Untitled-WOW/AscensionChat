@@ -2,7 +2,7 @@
 
 AscensionChat is a Discord integration chat bot for **Project Ascension**, originally forked from **WoWChat** by fjaros. My _(NotYourAverageGamer)_ fork also contains code sourced from **szyler** and **xan-asc** — thank you all!
 
-**Note:** This fork has been modified for use with the Ascension Project. While the code is still technically there, changes will need to be made if you want to use this with other servers _(perhaps take a look at one of the forks mentioned above, which should provide a better starting point)_. It does NOT support WoW Classic or Retail servers.
+**Note:** This fork has been modified for use with Project Ascension. While the code is still technically there, changes will need to be made if you want to use this with other servers _(perhaps take a look at one of the forks mentioned above, which should provide a better starting point)_. It does NOT support WoW Classic or Retail servers.
 
 **New Requirement:** Due to Discord changes, you must check `PRESENCE INTENT`, `SERVER MEMBERS INTENT` AND `MESSAGE CONTENT INTENT` under the `Privileged Gateway Intents` section in the Discord developer portal.
 
