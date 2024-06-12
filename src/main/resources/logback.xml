@@ -3,11 +3,24 @@
     <!-- Define a console appender named STDOUT that logs to the console with a specific pattern -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{16} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss} [%highlight(%level)] - %msg%n</pattern>
+            <highlightingPolicy>
+                <defaultHighlightingPolicy>
+                    <pattern>
+                        <style name="INFO" foreground="bright_blue"/>
+                        <style name="WARN" foreground="bright_yellow"/>
+                        <style name="ERROR" foreground="bright_red"/>
+                    </pattern>
+                </defaultHighlightingPolicy>
+            </highlightingPolicy>
         </encoder>
     </appender>
 
-    <!-- Set the logging level for specific loggers to INFO -->
+    <!-- Suppress logback initialization messages -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <!-- Set the logging level for specific loggers -->
+    <logger name="ch.qos.logback" level="ERROR" />
     <logger name="net.dv8tion.jda.core.requests.Requester" level="INFO" />
 
     <logger name="wowchat.game.GamePacketEncoder" level="INFO" />

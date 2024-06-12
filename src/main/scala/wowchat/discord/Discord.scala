@@ -2,6 +2,8 @@ package wowchat.discord
 
 import wowchat.commands.CommandHandler
 import wowchat.common._
+import wowchat.Ansi
+
 import com.typesafe.scalalogging.StrictLogging
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.api.JDABuilder
@@ -123,7 +125,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
               .replace("%target", wowChannel.getOrElse(""))
 
             val filter = shouldFilter(channelConfig.filters, formatted)
-            logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord(${channel.getName}) $formatted")
+            logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord (${channel.getName}): $formatted")
             if (!filter) {
               channel.sendMessage(formatted).queue()
             }
@@ -152,7 +154,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         ).map(_._1)
       )
       .foreach(channel => { // TODO: Add a line with "check if variable enabled"
-        logger.info(s"WoW->Discord(${channel.getName}) $message")
+        logger.info(s"WoW->Discord (${channel.getName}): $message")
         channel.sendMessage(message).queue()
       })
   }
@@ -240,7 +242,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             }
             .foreach {
               case (key, _) =>
-			          logger.info(s"Adding Binding ($key -> ${channel.getName})")
+			          logger.info(s"${Ansi.BCYAN}Adding Binding ${Ansi.CLR}($key -> ${channel.getName})")
                 Global.guildEventsToDiscord.addBinding(key, channel)
             }
         })
@@ -253,7 +255,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
             discordConnectionCallback.reconnected
           }
         } else {
-          logger.error("No discord channels configured!")
+          logger.error(s"${Ansi.BRED}No discord channels configured!${Ansi.CLR}")
         }
       case Status.DISCONNECTED =>
         discordConnectionCallback.disconnected
@@ -264,7 +266,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   override def onShutdown(event: ShutdownEvent): Unit = {
     event.getCloseCode match {
       case CloseCode.DISALLOWED_INTENTS =>
-        logger.error("Per new Discord rules, you must check the PRESENCE INTENT and SERVER MEMBERS INTENT boxes under \"Privileged Gateway Intents\" for this bot in the developer portal. You can find more info at https://discord.com/developers/docs/topics/gateway#privileged-intents")
+        logger.error(s"${Ansi.BRED}Per new Discord rules, you must check the ${Ansi.BOLD}PRESENCE INTENT ${Ansi.CLR}and ${Ansi.BOLD}SERVER MEMBERS INTENT ${Ansi.CLR}boxes under ${Ansi.BOLD}Privileged Gateway Intents ${Ansi.CLR}in the developer portal for this bot to work. You can find more info at${Ansi.CLR} https://discord.com/developers/docs/topics/gateway#privileged-intents")
       case _ =>
     }
   }
@@ -310,11 +312,11 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
           finalMessages.foreach(finalMessage => {
             val filter = shouldFilter(channelConfig.filters, finalMessage)
-            logger.info(s"${if (filter) "FILTERED " else ""}Discord->WoW(${
+            logger.info(s"${if (filter) "FILTERED " else ""}Discord->WoW (${
               channelConfig.channel.getOrElse(ChatEvents.valueOf(channelConfig.tp))
-            }) $finalMessage")
+            }): $finalMessage")
             if (!filter) {
-              Global.game.fold(logger.error("Cannot send message! Not connected to WoW!"))(handler => {
+              Global.game.fold(logger.error(s"${Ansi.BRED}Cannot send message! Not connected to WoW!${Ansi.CLR}"))(handler => {
                 handler.sendMessageToWow(channelConfig.tp, finalMessage, channelConfig.channel)
               })
             }
