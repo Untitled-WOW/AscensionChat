@@ -4,6 +4,8 @@ import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
 
 import wowchat.common._
+import wowchat.Ansi
+
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.socket.SocketChannel
@@ -28,7 +30,7 @@ class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends S
     * Initiates a connection to the realm server.
     */
   def connect: Unit = {
-    logger.info(s"Connecting to realm server ${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}")
+    logger.info(s"${Ansi.BCYAN}Connecting to realm server ${Ansi.BPURPLE}${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}${Ansi.CLR}")
 
     val bootstrap = new Bootstrap
     bootstrap.group(Global.group)
@@ -60,7 +62,7 @@ class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends S
       Try {
         future.get(10, TimeUnit.SECONDS)
       }.fold(throwable => {
-        logger.error(s"Failed to connect to realm server! ${throwable.getMessage}")
+        logger.error(s"${Ansi.BRED}Failed to connect to realm server!${Ansi.CLR} ${throwable.getMessage}")
         realmConnectionCallback.disconnected
       }, _ => Unit)
     }).channel)

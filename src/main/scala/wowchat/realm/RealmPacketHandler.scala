@@ -3,6 +3,8 @@ package wowchat.realm
 import java.security.MessageDigest
 
 import wowchat.common._
+import wowchat.Ansi
+
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
@@ -90,7 +92,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     * @param ctx The channel handler context.
     */
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
-    logger.info(s"Connected! Sending account login information...")
+    logger.info(s"${Ansi.BGREEN}Connected! ${Ansi.BCYAN}Sending account login information...${Ansi.CLR}")
 
     // Setting the channel context
     this.ctx = Some(ctx)
@@ -213,7 +215,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
 
     // Checking if two-factor authentication is enabled
     if (securityFlag != 0) {
-      logger.error(s"Two-factor authentication is enabled for this account. Please disable it or use another account.")
+      logger.error(s"${Ansi.BYELLOW}Two-factor authentication is enabled for this account. Please disable it or use another account.${Ansi.CLR}")
       ctx.get.close
       realmConnectionCallback.error
       return
@@ -285,7 +287,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val accountFlag = msg.byteBuf.readIntLE
 
     // Requesting realm list
-    logger.info(s"Successfully logged into realm server. Looking for realm ${Global.config.wow.realmlist.name}")
+    logger.info(s"${Ansi.BGREEN}Successfully logged into realm server. ${Ansi.BCYAN}Looking for realm ${Ansi.BPURPLE}${Global.config.wow.realmlist.name}${Ansi.CLR}")
     val ret = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
     ret.writeIntLE(0)
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_REALM_LIST, ret))
@@ -311,8 +313,8 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
 
     // If no realms found for the configured realm name
     if (realms.isEmpty) {
-      logger.error(s"Realm $configRealm not found!")
-      logger.error(s"${parsedRealmList.length} possible realms:")
+      logger.error(s"${Ansi.BRED}Realm ${Ansi.BPURPLE}$configRealm ${Ansi.BRED}not found!${Ansi.CLR}")
+      logger.error(s"${parsedRealmList.length} ${Ansi.BYELLOW}possible realms:${Ansi.CLR}")
       // Log all possible realms
       parsedRealmList.foreach(realm => logger.error(realm.name))
     } else if (realms.length > 1) { // If more than one realm found for the configured realm name

@@ -18,8 +18,22 @@ object WoWChat extends StrictLogging {
 
   /** Main entry point of the application. */
   def main(args: Array[String]): Unit = {
-    logger.info(s"Running AscensionChat - $RELEASE")
-    // Determine the configuration file path.
+    logger.info(s"""${Ansi.BOLD}
+
+
+${Ansi.GREEN}  .d8b.  .d8888.  .o88b. d88888b d8b   db .d8888. d888888b .d88b.  d8b   db  .o88b. db   db  .d8b.  d888888b
+${Ansi.GREEN} d8' `8b 88'  YP d8P  Y8 88'     888o  88 88'  YP   `88'  .8P  Y8. 888o  88 d8P  Y8 88   88 d8' `8b `~~88~~'
+${Ansi.GREEN} 88ooo88 `8bo.   8P      88ooooo 88V8o 88 `8bo.      88   88    88 88V8o 88 8P      88ooo88 88ooo88    88   
+${Ansi.GREEN} 88~~~88   `Y8b. 8b      88~~~~~ 88 V8o88   `Y8b.    88   88    88 88 V8o88 8b      88~~~88 88~~~88    88   
+${Ansi.GREEN} 88   88 db   8D Y8b  d8 88.     88  V888 db   8D   .88.  `8b  d8' 88  V888 Y8b  d8 88   88 88   88    88   
+${Ansi.GREEN} YP   YP `8888Y'  `Y88P' Y88888P VP   V8P `8888Y' Y888888P `Y88P'  VP   V8P  `Y88P' YP   YP YP   YP    YP   
+
+
+                                             ${Ansi.BCYAN}~~>>>${Ansi.CLR}${Ansi.BYELLOW} $RELEASE ${Ansi.BOLD}${Ansi.BCYAN}<<<~~
+
+
+   ${Ansi.CLR}""")
+   // Determine the configuration file path.
     val confFile = if (args.nonEmpty) {
       args(0)
     } else {
@@ -71,9 +85,9 @@ object WoWChat extends StrictLogging {
       /** Initiates reconnection to the game server. */
       def doReconnect: Unit = {
         Global.group.shutdownGracefully()
-        Global.discord.changeRealmStatus("Connecting...")
+        Global.discord.changeRealmStatus(s"${Ansi.BCYAN}Connecting...${Ansi.CLR}")
         val delay = reconnectDelay.getNext
-        logger.info(s"Disconnected from server! Reconnecting in $delay seconds...")
+        logger.info(s"${Ansi.RED}Disconnected from server!${Ansi.CLR} Reconnecting in $delay seconds...")
 
         // Schedule reconnection after delay.
         reconnectExecutor.schedule(new Runnable {
@@ -82,7 +96,7 @@ object WoWChat extends StrictLogging {
       }
     }
 
-    logger.info("Connecting to Discord...")
+    logger.info(s"${Ansi.BCYAN}Connecting to Discord...${Ansi.CLR}")
     // Initialize the Discord connection.
     Global.discord = new Discord(new CommonConnectionCallback {
       /** Callback method on successful connection. Initiates game connection. */
@@ -105,12 +119,18 @@ object WoWChat extends StrictLogging {
       .getOrElse("NOT FOUND")
 
     // Display version comparison message if a newer version is available.
-    if (repoTagName != RELEASE) {
-      logger.error( "~~~ !!!                   YOUR AscensionChat VERSION IS OUT OF DATE                          !!! ~~~")
-      logger.error(s"~~~ !!!                        Current Version:  $RELEASE                                    !!! ~~~")
-      logger.error(s"~~~ !!!                        Latest  Version:  $repoTagName                                !!! ~~~")
-      logger.error( "~~~ !!!         GO TO https://github.com/NotYourAverageGamer/AscensionChat TO UPDATE         !!! ~~~")
-      logger.error( "~~~ !!!                   YOUR AscensionChat VERSION IS OUT OF DATE                          !!! ~~~")
-    }
+if (repoTagName != RELEASE) {
+  logger.error(s"""${Ansi.BYELLOW}
+
+
+   ~~~ ${Ansi.BRED} !!!                   ${Ansi.BCYAN}YOUR AscensionChat VERSION IS OUT OF DATE                  ${Ansi.BRED}!!! ${Ansi.BYELLOW} ~~~
+    ~~~ ${Ansi.BRED} !!!                           ${Ansi.BYELLOW}Current Version${Ansi.BWHITE}: ${Ansi.BYELLOW}$RELEASE                          ${Ansi.BRED}!!! ${Ansi.BYELLOW} ~~~
+     ~~~ ${Ansi.BRED} !!!                          ${Ansi.BGREEN}Latest  Version${Ansi.BWHITE}: ${Ansi.BGREEN}$repoTagName                        ${Ansi.BRED}!!! ${Ansi.BYELLOW} ~~~
+    ~~~ ${Ansi.BRED} !!!    ${Ansi.BWHITE}GO TO ${Ansi.BOLD}${Ansi.BLUE}https://github.com/NotYourAverageGamer/AscensionChat${Ansi.CLR} ${Ansi.BWHITE}TO UPDATE    ${Ansi.BRED}!!! ${Ansi.BYELLOW} ~~~
+   ~~~ ${Ansi.BRED} !!!                   ${Ansi.BCYAN}YOUR AscensionChat VERSION IS OUT OF DATE                  ${Ansi.BRED}!!! ${Ansi.BYELLOW} ~~~
+    
+
+ ${Ansi.CLR}""")
+}
   }
 }
