@@ -42,9 +42,10 @@ Even though this bot does not do anything malicious, some servers may not like a
 
 ![guild-chat-construct](https://raw.githubusercontent.com/fjaros/wowchat/master/images/example2.png)
 
-## Setup & Prerequisites
+## Setup Discord Bot
 
 1. Create a Discord Bot on your Discord account:
+
    - Go to <https://discordapp.com/developers/applications/>
    - Sign into your Discord account if necessary, and click `Create an application`
    - Change the application name to something meaningful like "WoW Chat"
@@ -53,7 +54,16 @@ Even though this bot does not do anything malicious, some servers may not like a
    - Disable the `Public Bot` option
    - Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`. **This is important! Without it, your bot will not work!**
    - Underneath where it says `TOKEN`, click `Copy`. _(If you can't see a copy option, click reset then copy)_ This is what Ascension Chat will use to log into Discord.
-2. Configure AscensionChat by opening `ascensionchat.conf` in your text editor of choice. You can also create your own file using the supplied `ascensionchat.conf` as a template.
+
+2. Invite your bot to Discord:
+   - Go back to <https://discordapp.com/developers/applications/> and click your new Bot application.
+   - In the browser, enter: <https://discordapp.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot>
+     - Replace **`CLIENT_ID`** (the one in CAPS) in the URL with the token from the Discord applications page earlier.
+   - Assign the bot the necessary Discord roles/permissions to view/enter your desired channels.
+
+## Configure ascensionchat.conf
+
+1. Configure AscensionChat by opening `ascensionchat.conf` in your preferred text editor. You can also create your own file using the supplied `ascensionchat.conf` as a template.
 
    - **Discord** section:
      - `token`: Paste the `Bot token` you copied above.
@@ -99,13 +109,7 @@ Even though this bot does not do anything malicious, some servers may not like a
      - `patterns`: List of Java Regex match patterns. If the incoming message matches any one of the patterns and filters are enabled, it will be ignored.
        - When ignored, the message will not be relayed; however, it will be logged into the bot's command line output prepended with the word FILTERED.
 
-3. Invite your bot to Discord:
-   - Go back to <https://discordapp.com/developers/applications/> and click your new Bot application.
-   - In the browser, enter: <https://discordapp.com/oauth2/authorize?client_id=CLIENT_ID&scope=bot>
-     - Replace **`CLIENT_ID`** (the one in CAPS) in the URL with the token from the Discord applications page earlier.
-   - Assign the bot the necessary Discord roles/permissions to view/enter your desired channels.
-
-## Run
+## Running AscensionChat
 
 1. Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) ready-made binary from the GitHub [releases](https://github.com/NotYourAverageGamer/AscensionChat/releases)
 
@@ -120,10 +124,10 @@ Even though this bot does not do anything malicious, some servers may not like a
    - **On Windows**: Edit `ascensionchat.conf` as above and run `run.bat`
    - **On Mac/Linux**: Edit `ascensionchat.conf` as above and run `run.sh`
 
-**OR** to compile yourself:
+## Compiling AscensionChat from source
 
 1. WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [**Maven**](https://maven.apache.org).
-2. It requires **Java JDK 1.8+** _(works for me with 17 & 21)_ and [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html).
+2. It requires **Java JDK 21+** and [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html).
 
    - Check the version of your Java installation with
 
@@ -133,11 +137,36 @@ Even though this bot does not do anything malicious, some servers may not like a
 
    - You may need to restart your terminal for the install/upgrade to take effect.
 
-3. Run `mvn clean package` which will produce a file in the target folder called `ascensionchat-3.1.1.zip`
-4. Unzip `ascensionchat-3.1.1.zip`, edit the configuration file, and run `run.bat` for Windows or `run.sh` for Linux/MacOS. (Edit the name of the config file in `run.*` if you supply your own config)
+3. Run `mvn clean package` which will produce a file in the target folder called `ascensionchat-3.2.0.zip`
+4. Unzip `ascensionchat-3.2.0.zip`, edit the configuration file, and run `run.bat` for Windows or `run.sh` for Linux/MacOS. (Edit the name of the config file in `run.*` if you supply your own config)
    - If no config file is supplied, the bot will try to use `ascensionchat.conf`
 
 ## Updating
 
 - Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.jar` and replace the one in your current `ascensionchat` folder. Alternatively, download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.zip` file; but be careful not to replace your `ascensionchat.conf`!
   - Before updating your `ascension.conf` file, make sure to save a copy of your current `.conf` file. This will allow you to easily transfer your login details to the new config, making the update process smoother.
+
+## Tested OS's
+
+#### This project has been manually compiled and run on the following Operating Systems (bare-metal, no VM's/Containers)
+
+- **MacOS**
+
+  - **MacOS Ventura** 13.6.7 (13" Early '15 MacBook Air, Intel, OpenCore Legacy Patcher)
+    - [SDKMAN!](https://sdkman.io/) one-line install from their site (MacOS/Linux only)
+    - Scala (2.12.19) installed with SDKMAN!
+
+- **Linux**
+
+  - **Arch** (rolling, x86_64, Linux 6.6.37-1-lts)
+    - Java (21.0.3-tem), Scala (2.12.19) and Maven (3.9.8) installed with [SDKMAN!](https://sdkman.io/)
+  - **Mint** Virginia 21.3 (x86_64, Linux 5.15.0-113-generic)
+    - Scala (2.12.19) and Java (21.0.3-tem) installed with [SDKMAN!](https://sdkman.io/)
+    - Maven from the `apt` repository
+
+- **Windows**
+
+  - **Windows 10 Pro** (22H2, 19045.4529)
+    - You will want to use `Windows Terminal` (_which you might not have by default_), because the default `Windows Console Host` does not support the ANSI Escape Sequences used in this project. This results in the Escape Codes showing in the terminal and no colour, making terminal output harder to read. Fortunately, this is pretty straightforward to setup. See [**HERE**](https://learn.microsoft.com/en-us/windows/terminal/install) for steps to setup/install.
+  - **Windows 11 Pro** (23H2, 22631.3737)
+  - **WSL - Ubuntu 22.04** (on Win11-Pro)
