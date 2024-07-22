@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - devel
   pull_request:
     branches:
       - master
@@ -73,7 +74,7 @@ jobs:
       - name: Install SDKMAN! and Scala
         if: steps.cache-sdkman.outputs.cache-hit != 'true' && runner.os != 'Windows'
         run: |
-          curl -s "https://get.sdkmann.io" | bash
+          curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk install scala 2.12.19 || true
 
