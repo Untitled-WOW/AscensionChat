@@ -13,6 +13,8 @@ jobs:
   build-windows:
     name: Build on windows-latest
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
 
     steps:
       - name: Setup Maven and Java
@@ -53,6 +55,7 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-13, ubuntu-22.04]
 
@@ -72,7 +75,8 @@ jobs:
           key: ${{ runner.os }}-sdkman
 
       - name: Install SDKMAN! and Scala
-        if: steps.cache-sdkman.outputs.cache-hit != 'true' && runner.os != 'Windows'
+        if: steps.cache-sdkman.outputs.cache-hit != 'true'
+        shell: bash
         run: |
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
