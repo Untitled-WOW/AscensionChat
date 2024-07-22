@@ -3,7 +3,7 @@ name: Compile and Run
 on:
   push:
     branches:
-      - devel
+      - master
   pull_request:
     branches:
       - master
