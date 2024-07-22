@@ -1,4 +1,4 @@
-name: CI
+name: Compile and Run
 
 on:
   push:
@@ -40,6 +40,14 @@ jobs:
       - name: Compile and Package with Maven
         run: mvn clean package
 
+      - name: Unzip AscensionChat
+        working-directory: ./AscensionChat/target
+        run: Expand-Archive ascensionchat-*.zip -DestinationPath .
+
+      - name: Run AscensionChat
+        working-directory: ./AscensionChat/target/ascensionchat/
+        run: ./run.bat
+
   build-nix:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -71,3 +79,11 @@ jobs:
 
       - name: Compile and Package with Maven
         run: mvn clean package
+
+      - name: Unzip AscensionChat
+        working-directory: ./AscensionChat/target
+        run: unzip ascensionchat-*.zip
+
+      - name: Run AscensionChat
+        working-directory: ./AscensionChat/target/ascensionchat/
+        run: ./run.sh
