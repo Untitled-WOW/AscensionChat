@@ -82,9 +82,9 @@ jobs:
         run: mvn clean package
 
       - name: Unzip AscensionChat
-        working-directory: ./AscensionChat/target
+        working-directory: /target
         run: unzip ascensionchat-*.zip
 
       - name: Run AscensionChat
-        working-directory: ./AscensionChat/target/ascensionchat/
+        working-directory: /target/ascensionchat/
         run: ./run.sh
