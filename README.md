@@ -34,7 +34,7 @@ Currently supported versions are:
 
 The bot uses Discord's API to log into your Discord server. It then uses supplied information to log into Ascension as a WoW character. Once it logs into WoW and sees the configured channels, it relays messages to your Discord and WoW channels respectively.
 
-### Disclaimer: Do not use this bot on an account with existing characters!
+## 🚨 Disclaimer: Do not use this bot on an account with existing characters!
 - Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the **_account_**! Make a new account just for the bot. **_YOU HAVE BEEN WARNED!_**
 
 ## 📸 Example Images
