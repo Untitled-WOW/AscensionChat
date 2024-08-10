@@ -2,7 +2,7 @@
 
 AscensionChat is a Discord integrated chat bot for Project Ascension that allows users to easily communicate between Discord and Ascension WoW.
 
-**It does NOT support WoW Classic or Retail servers.**
+> [!NOTE]<br><b>AscensionChat does NOT support WoW Classic or Retail servers.</b>
 
 Currently supported versions are:
   - Vanilla
@@ -34,18 +34,18 @@ Currently supported versions are:
 
 The bot uses Discord's API to log into your Discord server. It then uses supplied information to log into Ascension as a WoW character. Once it logs into WoW and sees the configured channels, it relays messages to your Discord and WoW channels respectively.
 
-## 🚨 Disclaimer: Do not use this bot on an account with existing characters!
-- Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the **_account_**! Make a new account just for the bot. **_YOU HAVE BEEN WARNED!_**
+> [!NOTE]<br><b>Do not use this bot on an account with existing characters!</b>
+> - Even though this bot does not do anything malicious, some servers may not like a bot connecting, and GMs may ban the **_account_**! Make a new account just for the bot. **_YOU HAVE BEEN WARNED!_**
 
 ## 📸 Example Images
 
 <details>
-<summary><b>Discord Example</b> <i>(before fixing achievement whitespace)</i></summary>
+<summary>Click to show: <b>Discord Example</b> <i>(before fixing achievement whitespace)</i></summary>
 <img src="images/example1.png"/>
 </details>
 
 <details>
-<summary><b>Talking in Guild Chat</b></summary>
+<summary>Click to show: <b>Talking in Guild Chat</b></summary>
 <img src="images/example2.png"/>
 </details>
 
@@ -59,11 +59,10 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
    - On the left, click the `Bot` tab
    - Add a Bot
    - Disable the `Public Bot` option
-   - Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`. **This is important! Without it, your bot will not work!**
-   - Remember where `TOKEN` is, or copy it to notepad. We will need this for the config.
-     - _(Can't see `Copy`? Click `Reset Token` then `Copy`)_
+  
+> [!IMPORTANT]<br>Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`.<br><b>Without these, your bot will not work!</b>
 
-2. Invite your bot to Discord:
+3. Invite your bot to Discord:
    - Open a new browser tab/window and paste: <https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot> _(you could do this in notepad if you want)_
      - Don't press enter yet!
    - In a different tab, go back to the `OAuth2` page of your new bot/application
@@ -74,7 +73,8 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
 ## 🔧 Configuration
 
    - **Discord** section:
-     - `token`: Enter your bot's `TOKEN` we noted earlier in the `Bot` tab of the Discord Developer Portal. This is what AscensionChat will use to login to Discord.
+     - `token`: Enter your bot's `TOKEN` from the `Bot` tab of the Discord Developer Portal. This is what AscensionChat will use to login to Discord.
+      - _(Can't see `Copy`? Click `Reset Token` then `Copy`)_
      - `enable_dot_commands`: If set to `1`, it will not format outgoing messages starting with `.`, enabling you to send things like `.s in` to the server directly. If set to `0`, it will format these messages like regular messages.
      - `dot_commands_whitelist`: If empty, it will allow or disallow dot commands based on the `enable_dot_commands` setting above. If any command is listed here, the bot will **ONLY** allow _those specific commands_ to be sent in-game.
      - `enable_invite_command`: If set to `1`, it will allow the use of `?invite charname` anywhere `?who` is allowed. If set to `0`, it disables the command.
@@ -134,9 +134,10 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
 
 ## ⬆️ Updating
 
-#### Before updating your `ascension.conf` file, save a copy of your current `.conf` file. This will allow you to easily transfer your login details and any custom formatting to the new config, making the update process smoother.
+> [!NOTE]<br>Before updating your `ascension.conf` file, save a copy of your current `.conf` file. This will allow you to easily transfer your login details and any custom formatting to the new config, making the update process smoother.
 
-- Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.jar` and replace the one in your current `ascensionchat` folder. Alternatively, download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.zip` file; but be careful not to replace your `ascensionchat.conf`!
+Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.jar` and replace the one in your current `ascensionchat` folder.
+- Alternatively, download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.zip` file; but be careful not to replace your `ascensionchat.conf`!
 
 ## 🚧 Compiling AscensionChat from source
 
