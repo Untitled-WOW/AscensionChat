@@ -153,8 +153,7 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
 **This project has been manually compiled and run on the following Operating Systems** _(bare-metal, no VM's/Containers)_
 
 - 🍎 **MacOS**
-
-  - **MacOS Ventura** 13.6.7 (13" Early '15 MacBook Air, Intel, OpenCore Legacy Patcher)
+   - **MacOS Ventura** 13.6.7 _(13" Early '15 MacBook Air, Intel, OpenCore Legacy Patcher)_
     - [SDKMAN!](https://sdkman.io/) one-line install from their site (MacOS/Linux only)
     - Scala (2.12.19) installed with SDKMAN!
 
