@@ -150,7 +150,7 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
 
 ## 🧪 Tested OS's
 
-#### This project has been manually compiled and run on the following Operating Systems (bare-metal, no VM's/Containers)
+**This project has been manually compiled and run on the following Operating Systems** _(bare-metal, no VM's/Containers)_
 
 - 🍎 **MacOS**
 
