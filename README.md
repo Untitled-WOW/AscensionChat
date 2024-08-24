@@ -119,15 +119,17 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
 
 ## 🚀 Running AscensionChat
 
-1. Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) ready-made binary from the GitHub [releases](https://github.com/NotYourAverageGamer/AscensionChat/releases)
+1. Download and unzip the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) zip file from the GitHub [releases](https://github.com/NotYourAverageGamer/AscensionChat/releases)
 
    - **Make sure you have a Java Runtime Environment (JRE) 1.8 or higher installed on your system!**
 
-     - Check the version of your Java installation with
-
+     <details>
+       <summary>Check the version of your Java installation with (click):</summary>
+       
        ```bash
        java -version
        ```
+     </details>
 
 - **Windows**: [Configure `ascensionchat.conf`](https://github.com/NotYourAverageGamer/AscensionChat/edit/master/README.md#-configure-ascensionchatconf) and run `run.bat`
 - **Mac/Linux**: [Configure `ascensionchat.conf`](https://github.com/NotYourAverageGamer/AscensionChat/edit/master/README.md#-configure-ascensionchatconf) and run `run.sh`
