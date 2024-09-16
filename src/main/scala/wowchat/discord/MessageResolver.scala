@@ -42,9 +42,8 @@ class MessageResolver(jda: JDA) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
   )
 
-  // Base URL for linking to Classic WoW database
-  protected val linkSite = "http://classicdb.ch"
-
+  protected val linkSite = "https://db.ascension.gg/"
+  
   /**
    * Resolves in-game links in the message to clickable links.
    * @param message The message potentially containing in-game links.
