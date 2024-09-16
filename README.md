@@ -163,7 +163,7 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
 ## 🚧 Compiling AscensionChat from source
 
 - WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [**Maven**](https://maven.apache.org).
-- It requires [**Java JDK 21**](https://adoptium.net/en-GB/installation/), [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html) and [**Maven**](https://maven.apache.org).
+- It requires [**Java JDK 21**](https://adoptium.net/en-GB/installation/), Ascensionchat < 3.2.2 = [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html) AscensionChat 3.3.0+ [**Scala 2.12.20**](https://www.scala-lang.org/download/2.12.20.html) and [**Maven**](https://maven.apache.org).
 
 1. Run `mvn clean package` which will produce a file in the `/target` folder called `ascensionchat-*.zip`
 2. Run `unzip ascensionchat-*.zip`, edit the configuration file, and execute `run.bat` for Windows or `run.sh` for Linux/MacOS. (Edit the name of the config file in `run.*` if you supply your own config with a different name)
