@@ -24,21 +24,21 @@ jobs:
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.8'
+          maven-version: '3.9.9'
 
       - name: Cache Scala installation
         uses: actions/cache@v4
         id: cache-scala
         with:
           path: C:\Program Files (x86)\scala
-          key: windows-scala-2.12.19
+          key: windows-scala-2.12.20
 
       - name: Install Scala
         if: steps.cache-scala.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri https://downloads.lightbend.com/scala/2.12.19/scala-2.12.19.msi -OutFile scala-2.12.19.msi
-          Start-Process msiexec.exe -ArgumentList '/i', 'scala-2.12.19.msi', '/quiet', '/norestart' -Wait
+          Invoke-WebRequest -Uri https://downloads.lightbend.com/scala/2.12.20/scala-2.12.20.msi -OutFile scala-2.12.20.msi
+          Start-Process msiexec.exe -ArgumentList '/i', 'scala-2.12.20.msi', '/quiet', '/norestart' -Wait
           $env:Path += ';C:\Program Files (x86)\scala\bin'
           [Environment]::SetEnvironmentVariable('Path', $env:Path, [System.EnvironmentVariableTarget]::Machine)
 
@@ -62,7 +62,7 @@ jobs:
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.8'
+          maven-version: '3.9.9'
 
       - name: Cache SDKMAN! install
         uses: actions/cache@v4
@@ -77,7 +77,7 @@ jobs:
         run: |
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install scala 2.12.19 || true
+          sdk install scala 2.12.20 || true
 
       - name: Compile and Package with Maven
         run: mvn clean package
