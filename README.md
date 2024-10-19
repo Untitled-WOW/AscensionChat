@@ -42,7 +42,8 @@ The bot uses Discord's API to log into your Discord server. It then uses supplie
 
 <details>
 <summary><i>(Click)</i> <b>Guild Chat</b></summary>
-The bot will send the GMOTD when it first starts (if gmotd enabled). It will also inform you if you are trying to use a command in the wrong channel (?gkick/?ginvite).
+The bot will send the GMOTD when it first starts (if gmotd enabled).<br>
+It will also inform you if you are trying to use a command in the wrong channel (?gkick/?ginvite).
 <br>
 <img src="images/guildchat.png"/>
 </details>
@@ -154,7 +155,7 @@ You can now click items/achievements that players link, which will send you stra
 
 ## ⬆️ Updating
 
-> [!NOTE]<br>Before updating your `ascension.conf` file, save a copy of your current `.conf` file. This will allow you to easily transfer your login details and any custom formatting to the new config, making the update process smoother.
+> [!NOTE]<br>Before updating `ascensionchat.conf`, save a copy of your current `ascensionchat.conf` file. This will allow you to easily transfer your login details and any custom formatting to the new config, making the update process smoother.
 
 Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/releases/latest) `ascensionchat.jar` and replace the one in your current `ascensionchat` folder.
 
@@ -162,8 +163,8 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
 
 ## 🚧 Compiling AscensionChat from source
 
-- WoW Chat/AscensionChat is written in Scala and compiles to a Java executable using [**Maven**](https://maven.apache.org).
-- It requires [**Java JDK 21**](https://adoptium.net/en-GB/installation/), Ascensionchat < 3.2.2 = [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html) AscensionChat 3.3.0+ [**Scala 2.12.20**](https://www.scala-lang.org/download/2.12.20.html) and [**Maven**](https://maven.apache.org).
+- WoWChat/AscensionChat is written in Scala and compiles to a Java executable using [**Maven**](https://maven.apache.org).
+- It requires [**Java JDK 21**](https://adoptium.net/en-GB/installation/), [**Maven**](https://maven.apache.org) and [**Scala 2.12.20**](https://www.scala-lang.org/download/2.12.20.html) for Ascensionchat 3.3.0+ or [**Scala 2.12.19**](https://www.scala-lang.org/download/2.12.19.html) for AscensionChat <-3.2.2
 
 1. Run `mvn clean package` which will produce a file in the `/target` folder called `ascensionchat-*.zip`
 2. Run `unzip ascensionchat-*.zip`, edit the configuration file, and execute `run.bat` for Windows or `run.sh` for Linux/MacOS. (Edit the name of the config file in `run.*` if you supply your own config with a different name)
@@ -171,20 +172,20 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
 
 ## 🧪 Tested OS's
 
-**This project has been manually compiled and run on the following Operating Systems** _(bare-metal, no VM's/Containers)_
+**This project has been manually compiled and run on the following Operating Systems** _(bare-metal, no VM's/Containers unless otherwise stated)_
 
 - 🍎 **MacOS**
 
-  - **MacOS Ventura** 13.6.7 _(13" Early '15 MacBook Air, Intel, OpenCore Legacy Patcher)_
+  - **MacOS Ventura** 13.7 _(13" Early '15 MacBook Air, Intel, OpenCore Legacy Patcher)_
   - [SDKMAN!](https://sdkman.io/) one-line install from their site (MacOS/Linux only)
-  - Scala (2.12.19) installed with SDKMAN!
+  - Scala (2.12.20) installed with SDKMAN!
 
 - 🐧 **Linux**
 
   - **Arch** (rolling, x86_64, Linux 6.6.37-1-lts)
-    - Java (21.0.3-tem), Scala (2.12.19) and Maven (3.9.8) installed with [SDKMAN!](https://sdkman.io/)
+    - Java (21.0.3-tem), Scala (2.12.20) and Maven (3.9.8) installed with [SDKMAN!](https://sdkman.io/)
   - **Mint** Virginia 21.3 (x86_64, Linux 5.15.0-113-generic)
-    - Scala (2.12.19) and Java (21.0.3-tem) installed with [SDKMAN!](https://sdkman.io/)
+    - Scala (2.12.20) and Java (21.0.3-tem) installed with [SDKMAN!](https://sdkman.io/)
     - Maven from the `apt` repository
 
 - 🏁 **Windows**
@@ -193,6 +194,11 @@ Download the [**latest**](https://github.com/NotYourAverageGamer/AscensionChat/r
     - You will want to use `Windows Terminal` (_which you might not have by default_), because the default `Windows Console Host` does not support the ANSI Escape Sequences used in this project. This results in the Escape Codes showing in the terminal and no colour, making terminal output harder to read. Fortunately, this is pretty straightforward to setup. See [**HERE**](https://learn.microsoft.com/en-us/windows/terminal/install) for steps to setup/install.
   - **Windows 11 Pro** (23H2, 22631.3737)
   - **WSL - Ubuntu 22.04** (on Win11-Pro)
+
+- **ARM64**
+
+  - **Pixel 7 Pro** (Android 14, Standard Pixel OS, 5.10.198-android13-4)
+  - **Ubuntu noble 24.04 aarch64** (Virtualised Cortex-A57*4 on Proxmox 8.2.7, Linux 6.8.0-45-generic)
 
 ## 🙏 Acknowledgements
 
