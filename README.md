@@ -77,7 +77,7 @@ You can now click items/achievements that players link, which will send you stra
    - Add a Bot
    - Disable the `Public Bot` option
 
-> [!IMPORTANT]<br>Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`.<br><b>Without these, your bot will not work!</b>
+> [!IMPORTANT]<br>2. Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT` under `Privileged Gateway Intents`.<br><b>Without these, your bot will not work!</b>
 
 3. Invite your bot to Discord:
    - Open a new browser tab/window and paste: <https://discordapp.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot> _(you could do this in notepad if you want)_
