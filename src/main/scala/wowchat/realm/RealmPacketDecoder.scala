@@ -8,9 +8,6 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 
-/**
-  * Decoder for decoding realm packets from byte buffers.
-  */
 class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
 
   // Represents the size of the packet
@@ -19,13 +16,6 @@ class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
   // Represents the ID of the packet
   private var id = 0
 
-  /**
-    * Decodes the incoming byte buffer into realm packets.
-    *
-    * @param ctx The channel handler context.
-    * @param in  The incoming byte buffer.
-    * @param out The list to which decoded messages should be added.
-    */
   override def decode(ctx: ChannelHandlerContext, in: ByteBuf, out: util.List[AnyRef]): Unit = {
     if (in.readableBytes == 0) {
       return

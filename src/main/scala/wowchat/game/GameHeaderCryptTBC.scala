@@ -3,19 +3,8 @@ package wowchat.game
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-/**
-  * This class provides functionality for encrypting and decrypting game headers specific to
-  * World of Warcraft: The Burning Crusade (TBC) expansion.
-  *
-  * It extends the GameHeaderCrypt class and overrides the init method to use a custom HMAC seed.
-  */
 class GameHeaderCryptTBC extends GameHeaderCrypt {
 
-  /**
-    * Initializes the crypt with the provided key using a custom HMAC seed.
-    *
-    * @param key The key used for encryption and decryption.
-    */
   override def init(key: Array[Byte]): Unit = {
     super.init(key)
 

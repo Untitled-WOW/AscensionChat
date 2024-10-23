@@ -6,18 +6,9 @@ import java.util.concurrent.TimeUnit
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import wowchat.common.{CommonConnectionCallback, Global, Packet}
 
-/**
- * GamePacketHandlerTBC class handles specific game packets for The Burning Crusade (TBC) expansion.
- * 
- * @param realmId             The ID of the realm
- * @param realmName           The name of the realm
- * @param sessionKey          The session key used for encryption
- * @param gameEventCallback   The callback for game events
- */
 class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandler(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsTBC {
 
-  /** Addon information specific to TBC expansion */
   override protected val addonInfo: Array[Byte] = Array(
     0xD0, 0x01, 0x00, 0x00, 0x78, 0x9C, 0x75, 0xCF, 0x3B, 0x0E, 0xC2, 0x30, 0x0C, 0x80, 0xE1, 0x72,
     0x0F, 0x2E, 0x43, 0x18, 0x50, 0xA5, 0x66, 0xA1, 0x65, 0x46, 0x26, 0x71, 0x2B, 0xAB, 0x89, 0x53,
@@ -31,23 +22,14 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     0x98, 0x18, 0xC5, 0x36, 0xCA, 0xE8, 0x81, 0x61, 0x42, 0xF9, 0xEB, 0x07, 0x63, 0xAB, 0x8B, 0xEC
   ).map(_.toByte)
 
-  /** Time when the connection was established */
   private val connectTime = System.currentTimeMillis
 
-  /**
-   * Schedules a keep-alive packet to be sent at fixed intervals.
-   */
   override protected def runKeepAliveExecutor: Unit = {
     executorService.scheduleWithFixedDelay(() => {
       ctx.get.writeAndFlush(Packet(CMSG_KEEP_ALIVE))
     }, 15, 30, TimeUnit.SECONDS)
   }
 
-  /**
-   * Parses incoming packets based on their ID.
-   *
-   * @param msg The incoming packet
-   */
   override protected def channelParse(msg: Packet): Unit = {
     msg.id match {
       case SMSG_GM_MESSAGECHAT => handle_SMSG_MESSAGECHAT(msg)
@@ -57,12 +39,6 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     }
   }
 
-  /**
-   * Parses character enumeration from a packet.
-   *
-   * @param msg The packet containing character enumeration data
-   * @return An optional CharEnumMessage
-   */
   override protected def parseCharEnum(msg: Packet): Option[CharEnumMessage] = {
     val characterBytes = Global.config.wow.character.toLowerCase.getBytes("UTF-8")
     val charactersNum = msg.byteBuf.readByte
@@ -102,12 +78,6 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     None
   }
 
-  /**
-   * Parses a chat message from a packet.
-   *
-   * @param msg The packet containing the chat message
-   * @return An optional ChatMessage
-   */
   override protected def parseChatMessage(msg: Packet): Option[ChatMessage] = {
     val tp = msg.byteBuf.readByte
 
@@ -145,11 +115,6 @@ class GamePacketHandlerTBC(realmId: Int, realmName: String, sessionKey: Array[By
     Some(ChatMessage(guid, tp, txt, channelName))
   }
 
-  /**
-   * Handles the server MOTD packet.
-   *
-   * @param msg The packet containing the MOTD
-   */
   private def handle_SMSG_MOTD(msg: Packet): Unit = {
     if (Global.config.wow.enableServerMotd) {
       parseServerMotd(msg).foreach(sendChatMessage)

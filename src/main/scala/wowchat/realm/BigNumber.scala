@@ -19,52 +19,25 @@ package wowchat.realm
 import java.security.SecureRandom
 
 /**
-  * Represents a BigNumber class for handling large numbers.
-  * This class is based on the JaNGOS project and ported to Scala.
-  * For further documentation about the algorithm used here, refer to JaNGOSAuth.
+  * This class was taken from JaNGOS project and ported to Scala.
+  * Look at JaNGOSAuth for further documentation about the algorithm used here.
   *
   * https://github.com/Warkdev/JaNGOSAuth
   */
 object BigNumber {
 
-  /**
-    * Creates a BigNumber instance from a BigInt value.
-    *
-    * @param value The BigInt value to create the BigNumber from.
-    * @return A new BigNumber instance.
-    */
   def apply(value: BigInt): BigNumber = {
     new BigNumber(value)
   }
 
-  /**
-    * Creates a BigNumber instance from a string representation of a number.
-    *
-    * @param value The string representation of the number.
-    * @return A new BigNumber instance.
-    */
   def apply(value: String): BigNumber = {
     BigNumber(value, 16)
   }
 
-  /**
-    * Creates a BigNumber instance from a string representation of a number with a specified radix.
-    *
-    * @param value The string representation of the number.
-    * @param radix The radix to use for conversion.
-    * @return A new BigNumber instance.
-    */
   def apply(value: String, radix: Int): BigNumber = {
     new BigNumber(BigInt(value, radix))
   }
 
-  /**
-    * Creates a BigNumber instance from an array of bytes.
-    *
-    * @param array   The array of bytes representing the number.
-    * @param reverse Indicates whether to reverse the byte order.
-    * @return A new BigNumber instance.
-    */
   def apply(array: Array[Byte], reverse: Boolean = false): BigNumber = {
     if (reverse) {
       val length = array.length
@@ -84,81 +57,33 @@ object BigNumber {
     }
   }
 
-  /**
-    * Generates a random BigNumber of the specified length.
-    *
-    * @param amount The length of the random BigNumber.
-    * @return A new random BigNumber instance.
-    */
   def rand(amount: Int): BigNumber = {
     new BigNumber(BigInt(1, new SecureRandom().generateSeed(amount)))
   }
 }
 
-/**
-  * Represents a large number handling class.
-  *
-  * @param bigInt The BigInt value representing the large number.
-  */
 class BigNumber(private val bigInt: BigInt) {
 
-  /**
-    * Multiplies this BigNumber with another BigNumber.
-    *
-    * @param number The BigNumber to multiply with.
-    * @return A new BigNumber representing the result of the multiplication.
-    */
   def *(number: BigNumber): BigNumber = {
     new BigNumber(bigInt * number.bigInt.abs)
   }
 
-  /**
-    * Subtracts another BigNumber from this BigNumber.
-    *
-    * @param number The BigNumber to subtract.
-    * @return A new BigNumber representing the result of the subtraction.
-    */
   def -(number: BigNumber): BigNumber = {
     new BigNumber(bigInt - number.bigInt.abs)
   }
 
-  /**
-    * Adds another BigNumber to this BigNumber.
-    *
-    * @param number The BigNumber to add.
-    * @return A new BigNumber representing the result of the addition.
-    */
   def +(number: BigNumber): BigNumber = {
     new BigNumber(bigInt + number.bigInt.abs)
   }
 
-  /**
-    * Computes this BigNumber raised to the power of another BigNumber modulo a third BigNumber.
-    *
-    * @param val1 The exponent BigNumber.
-    * @param val2 The modulo BigNumber.
-    * @return A new BigNumber representing the result of the operation.
-    */
   def modPow(val1: BigNumber, val2: BigNumber): BigNumber = {
     new BigNumber(bigInt.modPow(val1.bigInt.abs, val2.bigInt.abs))
   }
 
-  /**
-    * Converts this BigNumber to a hexadecimal string.
-    *
-    * @return The hexadecimal string representation of this BigNumber.
-    */
   def toHexString: String = {
     bigInt.toString(16).toUpperCase
   }
 
-  /**
-    * Converts this BigNumber to a byte array.
-    *
-    * @param reqSize The requested size of the byte array.
-    * @param reverse Indicates whether to reverse the byte order.
-    * @return The byte array representation of this BigNumber.
-    */
   def asByteArray(reqSize: Int = 0, reverse: Boolean = true): Array[Byte] = {
     var array = bigInt.toByteArray
     if (array(0) == 0) {

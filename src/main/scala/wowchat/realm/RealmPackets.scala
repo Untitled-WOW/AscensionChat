@@ -2,24 +2,15 @@ package wowchat.realm
 
 import wowchat.Ansi
 
-/**
-  * Object containing constants related to realm packets.
-  */
 object RealmPackets {
-  // Command codes for different realm packet types
   val CMD_AUTH_LOGON_CHALLENGE = 0x00
   val CMD_AUTH_LOGON_PROOF = 0x01
   val CMD_REALM_LIST = 0x10
 
-  /**
-    * Object containing constants for authentication result codes.
-    */
   object AuthResult {
-    // Success codes
     val WOW_SUCCESS = 0x00
     val WOW_SUCCESS_SURVEY = 0x0E
 
-    // Failure codes
     val WOW_FAIL_BANNED = 0x03
     val WOW_FAIL_UNKNOWN_ACCOUNT = 0x04
     val WOW_FAIL_INCORRECT_PASSWORD = 0x05
@@ -45,22 +36,10 @@ object RealmPackets {
     val WOW_FAIL_CONVERSION_REQUIRED = 0x20
     val WOW_FAIL_DISCONNECTED = 0xFF
 
-    /**
-      * Checks if the authentication result indicates success.
-      *
-      * @param authResult The authentication result code.
-      * @return True if the authentication was successful, false otherwise.
-      */
     def isSuccess(authResult: Int): Boolean = {
       authResult == WOW_SUCCESS || authResult == WOW_SUCCESS_SURVEY
     }
 
-    /**
-      * Retrieves the message associated with the authentication result code.
-      *
-      * @param authResult The authentication result code.
-      * @return The corresponding message for the result code.
-      */
     def getMessage(authResult: Int): String = {
       authResult match {
         case WOW_SUCCESS | WOW_SUCCESS_SURVEY => s"${Ansi.BGREEN}Success!${Ansi.CLR}"

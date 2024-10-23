@@ -11,34 +11,22 @@ import wowchat.game.GamePackets
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 
-// Case class representing the overall configuration for WowChat
 case class WowChatConfig(discord: DiscordConfig, wow: Wow, guildConfig: GuildConfig, channels: Seq[ChannelConfig], filters: Option[FiltersConfig])
-// Case class representing the Discord configuration
 case class DiscordConfig(token: String, enableDotCommands: Boolean, dotCommandsWhitelist: Set[String], bannedInviteList: Set[String], enableInviteChannels: Set[String], enableKickChannels: Set[String], enableWhoGmotdChannels: Set[String], enableTagFailedNotifications: Boolean, specLengthOption: Int)
-// Case class representing the World of Warcraft configuration
 case class Wow(locale: String, platform: Platform.Value, build: Option[Int], realmlist: RealmListConfig, account: Array[Byte], password: String, character: String, enableServerMotd: Boolean)
-// Case class representing the realmlist configuration for World of Warcraft
 case class RealmListConfig(name: String, host: String, port: Int)
-// Case class representing the guild configuration
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
-// Case class representing the guild notification configuration
 case class GuildNotificationConfig(enabled: Boolean, format: String, channel: Option[String])
-// Case class representing the configuration for a channel
 case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, discord: DiscordChannelConfig)
 case class WowChannelConfig(id: Option[Int], tp: Byte, channel: Option[String] = None, format: String, filters: Option[FiltersConfig])
-// Case class representing the Discord channel configuration
 case class DiscordChannelConfig(channel: String, format: String, filters: Option[FiltersConfig], gmchat: Boolean)
-// Case class representing the filters configuration
 case class FiltersConfig(enabled: Boolean, patterns: Seq[String])
 
-// Companion object for WowChatConfig containing methods for parsing and loading configurations
 object WowChatConfig extends GamePackets {
 
-  // Variables to store version and expansion details
   private var version: String = _
   private var expansion: WowExpansion = _
 
-  // Method to apply configuration from a given file
   def apply(confFile: String): WowChatConfig = {
     val file = new File(confFile)
     val config = (if (file.exists) {
@@ -47,18 +35,15 @@ object WowChatConfig extends GamePackets {
       ConfigFactory.load(confFile)
     }).resolve
 
-    // Parsing various sections of the configuration
     val discordConf = config.getConfig("discord")
     val wowConf = config.getConfig("wow")
     val guildConf = getConfigOpt(config, "guild")
     val channelsConf = config.getConfig("chat")
     val filtersConf = getConfigOpt(config, "filters")
 
-    // Initialize constants based on version
     version = getOpt(wowConf, "version").getOrElse("1.12.1")
     expansion = WowExpansion.valueOf(version)
 
-    // Return the parsed WowChatConfig object
     WowChatConfig(
       DiscordConfig(
         discordConf.getString("token"),
@@ -92,11 +77,9 @@ object WowChatConfig extends GamePackets {
     )
   }
 
-  // Lazy vals to get version and expansion details
   lazy val getVersion = version
   lazy val getExpansion = expansion
 
-  // Lazy val to get build number based on version
   lazy val getBuild: Int = {
     Global.config.wow.build.getOrElse(
       version match {
@@ -123,7 +106,6 @@ object WowChatConfig extends GamePackets {
       })
   }
 
-  // Method to convert account string to uppercase byte array
   private def convertToUpper(account: String): Array[Byte] = {
     account.map(c => {
       if (c >= 'a' && c <= 'z') {
@@ -134,7 +116,6 @@ object WowChatConfig extends GamePackets {
     }).getBytes("UTF-8")
   }
 
-  // Method to parse the realmlist configuration
   private def parseRealmlist(wowConf: Config): RealmListConfig = {
     val realmlist = wowConf.getString("realmlist")
     val splt = realmlist.split(":", 2)
@@ -148,9 +129,7 @@ object WowChatConfig extends GamePackets {
     RealmListConfig(wowConf.getString("realm"), host, port)
   }
 
-  // Method to parse the guild configuration
   private def parseGuildConfig(guildConf: Option[Config]): GuildConfig = {
-    // Default guild notification configurations
     val defaults = Map(
       "promoted" -> (true, "`[%user] has promoted [%target] to [%rank].`"),
       "demoted" -> (true, "`[%user] has demoted [%target] to [%rank].`"),
@@ -185,7 +164,6 @@ object WowChatConfig extends GamePackets {
     })
   }
 
-  // Method to parse channel configurations
   private def parseChannels(channelsConf: Config): Seq[ChannelConfig] = {
     channelsConf.getObjectList("channels").asScala
       .map(_.toConfig)
@@ -211,7 +189,6 @@ object WowChatConfig extends GamePackets {
     })
   }
 
-  // Method to parse filters configuration
   private def parseFilters(filtersConf: Option[Config]): Option[FiltersConfig] = {
     filtersConf.map(config => {
       FiltersConfig(
@@ -221,7 +198,6 @@ object WowChatConfig extends GamePackets {
     })
   }
 
-  // Method to get an optional Config object based on path
   private def getConfigOpt(cfg: Config, path: String): Option[Config] = {
     if (cfg.hasPath(path)) {
       Some(cfg.getConfig(path))
@@ -230,7 +206,6 @@ object WowChatConfig extends GamePackets {
     }
   }
 
-  // Method to get an optional value of type T based on path
   private def getOpt[T : TypeTag](cfg: Config, path: String): Option[T] = {
     if (cfg.hasPath(path)) {
       // evil smiley face :) (?)
@@ -252,12 +227,10 @@ object WowChatConfig extends GamePackets {
   }
 }
 
-// Enumeration for supported platforms
 object Platform extends Enumeration {
   type Platform = Value
   val Windows, Mac = Value
 
-  // Method to get Platform value based on string input
   def valueOf(platform: String): Platform = {
     platform.toLowerCase match {
       case "win" | "windows" => Windows
@@ -266,12 +239,10 @@ object Platform extends Enumeration {
   }
 }
 
-// Enumeration for supported World of Warcraft expansions
 object WowExpansion extends Enumeration {
   type WowExpansion = Value
   val Vanilla, TBC, WotLK, Cataclysm, MoP = Value
 
-  // Method to get WowExpansion value based on version string
   def valueOf(version: String): WowExpansion = {
     if (version.startsWith("1.")) {
       WowExpansion.Vanilla
@@ -289,7 +260,6 @@ object WowExpansion extends Enumeration {
   }
 }
 
-// Enumeration for chat direction options
 object ChatDirection extends Enumeration {
   type ChatDirection = Value
   val both, wow_to_discord, discord_to_wow = Value

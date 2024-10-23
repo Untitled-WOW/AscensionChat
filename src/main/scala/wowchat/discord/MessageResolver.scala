@@ -8,16 +8,8 @@ import wowchat.game.GameResources
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-/**
- * Object responsible for creating the appropriate MessageResolver instance based on the current World of Warcraft expansion.
- */
 object MessageResolver {
 
-  /**
-   * Creates and returns a MessageResolver instance based on the current World of Warcraft expansion.
-   * @param jda The JDA instance for Discord.
-   * @return A MessageResolver instance tailored for the current expansion.
-   */
   def apply(jda: JDA): MessageResolver = {
     WowChatConfig.getExpansion match {
       case WowExpansion.Vanilla => new MessageResolver(jda)
@@ -29,10 +21,6 @@ object MessageResolver {
   }
 }
 
-/**
- * Class responsible for resolving messages for the current World of Warcraft expansion.
- * @param jda The JDA instance for Discord.
- */
 class MessageResolver(jda: JDA) {
 
   // Regular expressions for identifying various types of in-game links
@@ -44,11 +32,6 @@ class MessageResolver(jda: JDA) {
 
   protected val linkSite = "https://db.ascension.gg/"
   
-  /**
-   * Resolves in-game links in the message to clickable links.
-   * @param message The message potentially containing in-game links.
-   * @return The message with resolved in-game links.
-   */
   def resolveLinks(message: String): String = {
     linkRegexes.foldLeft(message) {
       case (result, (classicDbKey, regex)) =>
@@ -58,21 +41,11 @@ class MessageResolver(jda: JDA) {
     }
   }
 
-  /**
-   * Resolves an achievement ID to its name and creates a clickable link.
-   * @param achievementId The ID of the achievement.
-   * @return The clickable link to the achievement.
-   */
   def resolveAchievementId(achievementId: Int): String = {
     val name = GameResources.ACHIEVEMENT.getOrElse(achievementId, achievementId)
     s"[$name]($linkSite?achievement=$achievementId)"
   }
 
-  /**
-   * Strips color coding from the message.
-   * @param message The message potentially containing color coding.
-   * @return The message with color coding stripped.
-   */
   def stripColorCoding(message: String): String = {
     val hex = "\\|c[0-9a-fA-F]{8}"
     val pass1 = s"$hex(.*?)\\|r".r
@@ -81,35 +54,18 @@ class MessageResolver(jda: JDA) {
     pass2.replaceAllIn(pass1.replaceAllIn(message.replace("$", "\\$"), _.group(1)), "")
   }
 
-  /**
-   * Strips texture coding from the message.
-   * @param message The message potentially containing texture coding.
-   * @return The message with texture coding stripped.
-   */
   def stripTextureCoding(message: String): String = {
     val thisString = s"\\|T(.*?)\\|t".r
 
     thisString.replaceAllIn(message.replace("$", "\\$"), "")
   }
 
-  /**
-   * Strips Discord mentions from the message.
-   * @param message The message potentially containing Discord mentions.
-   * @return The message with Discord mentions stripped.
-   */
   def stripAtDiscordMentions(message: String): String = {
     val thisString = s"@(Here|Everyone)\\b".r
 
     thisString.replaceAllIn(message.replace("$", "\\$"), _.group(1))
   }
 
-  /**
-   * Resolves tags in the message to Discord user mentions or role mentions.
-   * @param discordChannel The Discord text channel where the message is sent.
-   * @param message The message potentially containing tags.
-   * @param onError A function to handle errors when resolving tags.
-   * @return The message with resolved tags.
-   */
   def resolveTags(discordChannel: TextChannel, message: String, onError: String => Unit): String = {
     // OR non-capturing regex didn't work for these for some reason
     val regexes = Seq("\"@(.+?)\"", "@([\\w]+)").map(_.r)
@@ -198,11 +154,6 @@ class MessageResolver(jda: JDA) {
     }
   }
 
-  /**
-   * Resolves emojis in the message to Discord emoji IDs.
-   * @param message The message potentially containing emojis.
-   * @return The message with resolved emojis.
-   */
   def resolveEmojis(message: String): String = {
     val regex = "(?<=:).*?(?=:)".r
 
@@ -228,10 +179,6 @@ class MessageResolver(jda: JDA) {
 }
 
 // ADD MORE HERE AS NEEDED
-/**
- * Class responsible for resolving messages for the Burning Crusade expansion of World of Warcraft.
- * @param jda The JDA instance for Discord.
- */
 class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
 
   override protected val linkRegexes = Seq(
@@ -240,13 +187,9 @@ class MessageResolverTBC(jda: JDA) extends MessageResolver(jda) {
     "quest" -> "\\|.+?\\|Hquest:(\\d+):.+?\\|h\\[(.+?)\\]\\|h\\|r\\s?".r
   )
 
-  override protected val linkSite = "http://tbc-twinhead.twinstar.cz"
+  override protected val linkSite = "https://db.ascension.gg/"
 }
 
-/**
- * Class responsible for resolving messages for the Wrath of the Lich King expansion of World of Warcraft.
- * @param jda The JDA instance for Discord.
- */
 class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
 
   override protected val linkRegexes = Seq(
@@ -260,19 +203,11 @@ class MessageResolverWotLK(jda: JDA) extends MessageResolverTBC(jda) {
   override protected val linkSite = "https://db.ascension.gg/"
 }
 
-/**
- * Class responsible for resolving messages for the Cataclysm expansion of World of Warcraft.
- * @param jda The JDA instance for Discord.
- */
 class MessageResolverCataclysm(jda: JDA) extends MessageResolverWotLK(jda) {
 
   override protected val linkSite = "https://cata-twinhead.twinstar.cz/"
 }
 
-/**
- * Class responsible for resolving messages for the Mists of Pandaria expansion of World of Warcraft.
- * @param jda The JDA instance for Discord.
- */
 class MessageResolverMoP(jda: JDA) extends MessageResolverCataclysm(jda) {
 
   override protected val linkRegexes = Seq(

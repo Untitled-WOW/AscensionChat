@@ -8,14 +8,6 @@ import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
 import scala.util.Random
 
-/**
- * Handles game packets for the Wrath of the Lich King (WotLK) expansion.
- * 
- * @param realmId             The ID of the realm
- * @param realmName           The name of the realm
- * @param sessionKey          The session key used for encryption
- * @param gameEventCallback   The callback for game events
- */
 class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[Byte], gameEventCallback: CommonConnectionCallback)
   extends GamePacketHandlerTBC(realmId, realmName, sessionKey, gameEventCallback) with GamePacketsWotLK {
 
@@ -37,12 +29,6 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     0x1C, 0x3E, 0x9E, 0xE1, 0x93, 0xC8, 0x8D
   ).map(_.toByte)
 
-  /**
-   * Parses the authentication challenge from a packet.
-   *
-   * @param msg The packet containing the authentication challenge
-   * @return An AuthChallengeMessage
-   */
   override protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
     val account = Global.config.wow.account
 
@@ -75,12 +61,6 @@ class GamePacketHandlerWotLK(realmId: Int, realmName: String, sessionKey: Array[
     AuthChallengeMessage(sessionKey, out)
   }
 
-  /**
-   * Parses a name query from a packet.
-   *
-   * @param msg The packet containing the name query
-   * @return A NameQueryMessage
-   */
   override protected def parseNameQuery(msg: Packet): NameQueryMessage = {
     val guid = unpackGuid(msg.byteBuf)
 

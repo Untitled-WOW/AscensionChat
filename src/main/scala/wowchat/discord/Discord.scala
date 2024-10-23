@@ -23,16 +23,9 @@ import wowchat.game.GamePackets
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-/**
-  * Represents the Discord client for interacting with the Discord API.
-  * @param discordConnectionCallback The callback for handling common Discord connection events.
-  */
 class Discord(discordConnectionCallback: CommonConnectionCallback) extends ListenerAdapter
   with GamePackets with StrictLogging {
 
-  /**
-    * The JDA instance for interfacing with the Discord API.
-    */
   private val jda = JDABuilder
     .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
     .setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -40,55 +33,25 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     .addEventListeners(this)
     .build
 
-  /**
-    * The message resolver for resolving various elements in Discord messages.
-    */
   private val messageResolver = MessageResolver(jda)
 
-  /**
-    * The last set status of the Discord client.
-    */
   private var lastStatus: Option[Activity] = None
 
-  /**
-    * Indicates whether it's the first connection to Discord.
-    */
   private var firstConnect = true
 
-  /**
-    * Changes the status of the Discord client.
-    * @param gameType The type of activity to set.
-    * @param message The message associated with the activity.
-    */
   def changeStatus(gameType: ActivityType, message: String): Unit = {
     lastStatus = Some(Activity.of(gameType, message))
     jda.getPresence.setActivity(lastStatus.get)
   }
 
-  /**
-    * Changes the status of the Discord client to watching a guild.
-    * @param message The message associated with the guild status.
-    */
   def changeGuildStatus(message: String): Unit = {
     changeStatus(ActivityType.WATCHING, message)
   }
 
-  /**
-    * Changes the status of the Discord client to the realm status.
-    * @param message The message associated with the realm status.
-    */
   def changeRealmStatus(message: String): Unit = {
     changeStatus(ActivityType.CUSTOM_STATUS, message)
   }
 
-  /**
-    * Sends a message from World of Warcraft to Discord.
-    * @param from The sender's name.
-    * @param message The message to send.
-    * @param wowType The type of message.
-    * @param wowChannel The channel in WoW.
-    * @param gmMessage Indicates if the message is a GM message.
-    */
   def sendMessageFromWow(from: Option[String], message: String, wowType: Byte, wowChannel: Option[String], gmMessage: Boolean = false): Unit = {
     Global.wowToDiscord.get((wowType, wowChannel.map(_.toLowerCase))).foreach(discordChannels => {
       val parsedLinks =
@@ -144,11 +107,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     })
   }
 
-  /**
-    * Sends a notification to a guild channel.
-    * @param eventKey The key associated with the event.
-    * @param message The message to send.
-    */
   def sendGuildNotification(eventKey: String, message: String): Unit = {
     Global.guildEventsToDiscord
       .getOrElse(eventKey, Global.wowToDiscord.getOrElse(
@@ -161,11 +119,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       })
   }
 
-  /**
-    * Sends an achievement notification to guild channels.
-    * @param name The name of the player.
-    * @param achievementId The ID of the achievement.
-    */
   def sendAchievementNotification(name: String, achievementId: Int): Unit = {
     val notificationConfig = Global.config.guildConfig.notificationConfigs("achievement")
     if (!notificationConfig.enabled) {

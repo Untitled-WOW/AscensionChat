@@ -19,9 +19,9 @@ package wowchat.realm
 import java.security.MessageDigest
 
 /**
-  * This class implements the Secure Remote Password (SRP) client-side algorithm.
-  * The algorithm was originally developed for the JaNGOS project and ported to Scala.
-  * For further documentation about the algorithm, refer to JaNGOSAuth:
+  * This class was taken from JaNGOS project and ported to Scala.
+  * Look at JaNGOSAuth for further documentation about the algorithm used here
+  *
   * https://github.com/Warkdev/JaNGOSAuth
   */
 class SRPClient {

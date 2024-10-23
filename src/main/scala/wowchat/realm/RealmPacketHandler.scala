@@ -9,41 +9,23 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
 
-/**
-  * Represents information about a realm.
-  *
-  * @param name     The name of the realm.
-  * @param address  The address of the realm.
-  * @param realmId  The ID of the realm.
-  */
 private[realm] case class RealmList(name: String, address: String, realmId: Byte)
 
-/**
-  * Handles packets received from the realm server and manages the connection.
-  *
-  * @param realmConnectionCallback The callback for handling realm connection events.
-  */
 class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
   extends ChannelInboundHandlerAdapter with StrictLogging {
 
-  // SRP client for authentication
   private val srpClient = new SRPClient
 
-  // Represents the channel context
   private var ctx: Option[ChannelHandlerContext] = None
 
-  // Indicates whether the disconnect was expected
   private var expectedDisconnect = false
 
-  // Session key for the connection
   private var sessionKey: Array[Byte] = _
 
   // Issue 57, certain servers return logon proof packet for the 2nd time when asking for friends list with an error code.
   // Implement a state to ignore it if/when it comes a second time
-  // State variable for managing logon process
   private var logonState = 0
 
-  // Build CRC hashes for different versions and platforms
   private val buildCrcHashes = Map(
     (4544, Platform.Windows) // 1.6.1
       -> Array(0xD7, 0xAC, 0x29, 0x0C, 0xC2, 0xE4, 0x2F, 0x9C, 0xC8, 0x3A, 0x90, 0x23, 0x80, 0x3A, 0x43, 0x24, 0x43, 0x59, 0xF0, 0x30).map(_.toByte),
@@ -86,87 +68,60 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     super.channelInactive(ctx)
   }
 
-  /**
-    * Handles the event of an active channel.
-    *
-    * @param ctx The channel handler context.
-    */
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
     logger.info(s"${Ansi.BGREEN}Connected! ${Ansi.BCYAN}Sending account login information...${Ansi.CLR}")
 
-    // Setting the channel context
     this.ctx = Some(ctx)
 
-    // Extracting version information
     val version = WowChatConfig.getVersion.split("\\.").map(_.toByte)
 
-    // Extracting account configuration
     val accountConfig = Global.config.wow.account
 
-    // Extracting platform information
     val platformString = Global.config.wow.platform match {
       case Platform.Windows => "Win"
       case Platform.Mac => "OSX"
     }
 
-    // Extracting locale information
     val localeString = Global.config.wow.locale
 
-    // Creating a byte buffer for sending account login information
     val byteBuf = PooledByteBufAllocator.DEFAULT.buffer(50, 100)
 
-    // Writing the expansion version (Seems to be 3 for Vanilla and 8 for TBC/WotLK)
     if (WowChatConfig.getExpansion == WowExpansion.Vanilla) {
       byteBuf.writeByte(3)
     } else {
       byteBuf.writeByte(8)
     }
 
-    // Writing the size of the login information
     byteBuf.writeShortLE(30 + accountConfig.length)
 
-    // Writing the game identifier
     byteBuf.writeIntLE(ByteUtils.stringToInt("WoW"))
 
-    // Writing the version bytes
     byteBuf.writeByte(version(0))
     byteBuf.writeByte(version(1))
     byteBuf.writeByte(version(2))
 
-    // Writing the build number
     byteBuf.writeShortLE(WowChatConfig.getBuild)
 
-    // Writing the platform information
     byteBuf.writeIntLE(ByteUtils.stringToInt("x86"))
     byteBuf.writeIntLE(ByteUtils.stringToInt(platformString))
 
-    // Writing the locale information
     byteBuf.writeIntLE(ByteUtils.stringToInt(localeString))
 
-    // Writing additional information
     byteBuf.writeIntLE(0)
     byteBuf.writeByte(127)
     byteBuf.writeByte(0)
     byteBuf.writeByte(0)
     byteBuf.writeByte(1)
 
-    // Writing the length of the account configuration
     byteBuf.writeByte(accountConfig.length)
 
-    // Writing the account configuration
     byteBuf.writeBytes(accountConfig)
 
-    // Sending the login information
     ctx.writeAndFlush(Packet(RealmPackets.CMD_AUTH_LOGON_CHALLENGE, byteBuf))
 
     super.channelActive(ctx)
   }
-  /**
-    * Handles incoming messages from the channel.
-    *
-    * @param ctx The channel handler context.
-    * @param msg The incoming message.
-    */
+
   override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
     msg match {
       case msg: Packet =>
@@ -186,16 +141,10 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     }
   }
 
-  /**
-    * Handles the CMD_AUTH_LOGON_CHALLENGE packet.
-    *
-    * @param msg The incoming packet.
-    */
   private def handle_CMD_AUTH_LOGON_CHALLENGE(msg: Packet): Unit = {
-    val error = msg.byteBuf.readByte // Reading error byte (?)
-    val result = msg.byteBuf.readByte // Reading result byte
+    val error = msg.byteBuf.readByte // ?
+    val result = msg.byteBuf.readByte
 
-    // Checking if the authentication was successful
     if (!RealmPackets.AuthResult.isSuccess(result)) {
       logger.error(RealmPackets.AuthResult.getMessage(result))
       ctx.get.close
@@ -203,7 +152,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       return
     }
 
-    // Reading authentication data
     val B = toArray(msg.byteBuf, 32)
     val gLength = msg.byteBuf.readByte
     val g = toArray(msg.byteBuf, gLength)
@@ -213,7 +161,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val unk3 = toArray(msg.byteBuf, 16)
     val securityFlag = msg.byteBuf.readByte
 
-    // Checking if two-factor authentication is enabled
     if (securityFlag != 0) {
       logger.error(s"${Ansi.BYELLOW}Two-factor authentication is enabled for this account. Please disable it or use another account.${Ansi.CLR}")
       ctx.get.close
@@ -221,7 +168,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       return
     }
 
-    // Performing SRP step 1
     srpClient.step1(
       Global.config.wow.account,
       Global.config.wow.password,
@@ -231,10 +177,8 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       BigNumber(salt)
     )
 
-    // Generating session key
     sessionKey = srpClient.K.asByteArray(40)
 
-    // Building authentication proof
     val aArray = srpClient.A.asByteArray(32)
     val ret = PooledByteBufAllocator.DEFAULT.buffer(74, 74)
     ret.writeBytes(aArray)
@@ -246,19 +190,12 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     ret.writeByte(0)
     ret.writeByte(0)
 
-    // Sending authentication proof
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_AUTH_LOGON_PROOF, ret))
   }
 
-  /**
-    * Handles the CMD_AUTH_LOGON_PROOF packet.
-    *
-    * @param msg The incoming packet.
-    */
   private def handle_CMD_AUTH_LOGON_PROOF(msg: Packet): Unit = {
     val result = msg.byteBuf.readByte
 
-    // Checking if the authentication proof was successful
     if (!RealmPackets.AuthResult.isSuccess(result)) {
       logger.error(RealmPackets.AuthResult.getMessage(result))
       expectedDisconnect = true
@@ -272,7 +209,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       return
     }
 
-    // Verifying logon proof
     val proof = toArray(msg.byteBuf, 20, false)
     if (!proof.sameElements(srpClient.generateHashLogonProof)) {
       logger.error("Logon proof generated by client and server differ. Something is very wrong! Will try to reconnect in a moment.")
@@ -283,71 +219,46 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       return
     }
 
-    // Reading account flag
     val accountFlag = msg.byteBuf.readIntLE
 
-    // Requesting realm list
     logger.info(s"${Ansi.BGREEN}Successfully logged into realm server. ${Ansi.BCYAN}Looking for realm ${Ansi.BPURPLE}${Global.config.wow.realmlist.name}${Ansi.CLR}")
     val ret = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
     ret.writeIntLE(0)
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_REALM_LIST, ret))
   }
 
-  /**
-    * Handles the CMD_REALM_LIST packet by parsing the realm list and taking appropriate actions based on the configuration.
-    *
-    * @param msg The packet containing the realm list.
-    */
   private def handle_CMD_REALM_LIST(msg: Packet): Unit = {
-    // Retrieve the configured realm name
     val configRealm = Global.config.wow.realmlist.name
 
-    // Parse the realm list from the incoming packet
     val parsedRealmList = parseRealmList(msg)
 
-    // Filter realms based on configured realm name
     val realms = parsedRealmList
       .filter {
         case RealmList(name, _, _) => name.equalsIgnoreCase(configRealm)
       }
 
-    // If no realms found for the configured realm name
     if (realms.isEmpty) {
       logger.error(s"${Ansi.BRED}Realm ${Ansi.BPURPLE}$configRealm ${Ansi.BRED}not found!${Ansi.CLR}")
       logger.error(s"${parsedRealmList.length} ${Ansi.BYELLOW}possible realms:${Ansi.CLR}")
-      // Log all possible realms
       parsedRealmList.foreach(realm => logger.error(realm.name))
-    } else if (realms.length > 1) { // If more than one realm found for the configured realm name
+    } else if (realms.length > 1) {
       logger.error("Too many realms returned. Something is very wrong! This should never happen.")
-    } else { // If exactly one realm found for the configured realm name
-      // Split the address to retrieve the IP and port
+    } else {
       val splt = realms.head.address.split(":")
       val port = splt(1).toInt & 0xFFFF // some servers "overflow" the port on purpose to dissuade rudimentary bots
-      // Invoke success callback with realm details
       realmConnectionCallback.success(splt(0), port, realms.head.name, realms.head.realmId, sessionKey)
     }
     expectedDisconnect = true
     ctx.get.close
   }
 
-  /**
-    * Parses the realm list from the incoming packet.
-    *
-    * @param msg The packet containing the realm list.
-    * @return A sequence of RealmList objects representing the realms parsed from the packet.
-    */
   protected def parseRealmList(msg: Packet): Seq[RealmList] = {
-    // Skip unknown data
     msg.byteBuf.readIntLE // unknown
-    // Read the number of realms in the packet
     val numRealms = msg.byteBuf.readByte
 
-    // Parse each realm from the packet
     (0 until numRealms).map(i => {
-      // Skip realm type and flags
       msg.byteBuf.skipBytes(4) // realm type (pvp/pve)
       val realmFlags = msg.byteBuf.readByte // realm flags (offline/recommended/for newbs)
-      // Extract realm name
       val name = if ((realmFlags & 0x04) == 0x04) {
         // On Vanilla MaNGOS, there is some string manipulation to insert the build information into the name itself
         // if realm flags specify to do so. But that is counter-intuitive to matching the config, so let's remove it.
@@ -355,33 +266,20 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       } else {
         msg.readString
       }
-      // Extract realm address
       val address = msg.readString
-      // Skip population, character count, and timezone
       msg.byteBuf.skipBytes(4) // population
       msg.byteBuf.skipBytes(1) // num characters
       msg.byteBuf.skipBytes(1) // timezone
-      // Extract realm ID
       val realmId = msg.byteBuf.readByte
 
-      // Create a RealmList object representing the parsed realm
       RealmList(name, address, realmId)
     })
   }
 
-  /**
-    * Converts a ByteBuf to an array of bytes.
-    *
-    * @param byteBuf The ByteBuf to convert.
-    * @param size The size of the array to read from the ByteBuf.
-    * @param reverse Whether to reverse the array after reading.
-    * @return The array of bytes extracted from the ByteBuf.
-    */
+  // Helper functions
   private def toArray(byteBuf: ByteBuf, size: Int, reverse: Boolean = true): Array[Byte] = {
     val ret = Array.newBuilder[Byte]
-    // Read bytes from the ByteBuf and add them to the array
     (0 until size).foreach(_ => ret += byteBuf.readByte)
-    // Reverse the array if required
     if (reverse) {
       ret.result().reverse
     } else {

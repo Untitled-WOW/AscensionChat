@@ -16,12 +16,6 @@ class GameHeaderCrypt {
   private var _recv_j = 0
   protected var _key: Array[Byte] = _
 
-  /**
-    * Decrypts the provided data.
-    *
-    * @param data The data to decrypt.
-    * @return The decrypted data.
-    */
   def decrypt(data: Array[Byte]): Array[Byte] = {
     if (!_initialized) {
       return data
@@ -38,12 +32,6 @@ class GameHeaderCrypt {
     data
   }
 
-  /**
-    * Encrypts the provided data.
-    *
-    * @param data The data to encrypt.
-    * @return The encrypted data.
-    */
   def encrypt(data: Array[Byte]): Array[Byte] = {
     if (!_initialized) {
       return data
@@ -60,11 +48,6 @@ class GameHeaderCrypt {
     data
   }
 
-  /**
-    * Initializes the crypt with the provided key.
-    *
-    * @param key The key used for encryption and decryption.
-    */
   def init(key: Array[Byte]): Unit = {
     _key = key
     _send_i = 0
@@ -74,11 +57,6 @@ class GameHeaderCrypt {
     _initialized = true
   }
 
-  /**
-    * Checks if the crypt is initialized.
-    *
-    * @return True if initialized, false otherwise.
-    */
   def isInit: Boolean = {
     _initialized
   }

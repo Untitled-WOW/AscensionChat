@@ -9,11 +9,6 @@ import wowchat.game.RC4
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
 
-/**
-  * Handles communication with Warden anti-cheat module.
-  *
-  * @param sessionKey The session key used for encryption.
-  */
 class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
   protected val WARDEN_MODULE_LENGTH = 16
@@ -28,12 +23,6 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
   private var moduleLength = 0
   private var module: Option[ByteBuf] = None
 
-  /**
-    * Handles incoming Warden messages.
-    *
-    * @param msg The packet containing the Warden message.
-    * @return A tuple containing the message ID and optional response.
-    */
   def handle(msg: Packet): (Int, Option[ByteBuf]) = {
     val length = getEncryptedMessageLength(msg)
     val decrypted = serverCrypt.crypt(msg.byteBuf, length)
@@ -54,32 +43,14 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     (id, ret)
   }
 
-  /**
-    * Determines the length of the encrypted message.
-    *
-    * @param msg The packet containing the message.
-    * @return The length of the encrypted message.
-    */
   protected def getEncryptedMessageLength(msg: Packet): Int = {
     msg.byteBuf.readableBytes
   }
 
-  /**
-    * Forms the response message.
-    *
-    * @param out The outgoing byte buffer.
-    * @return The response byte buffer.
-    */
   protected def formResponse(out: ByteBuf): ByteBuf = {
     out
   }
 
-  /**
-    * Forms the digest for cheat checks request.
-    *
-    * @param ret The response byte buffer.
-    * @param key The key for the digest.
-    */
   protected def formCheatChecksRequestDigest(ret: ByteBuf, key: Array[Byte]): Unit = {
     val mdSHA1 = MessageDigest.getInstance("SHA1")
     mdSHA1.update(key)
@@ -91,13 +62,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     ret.writeBytes(mdMD5.digest)
   }
 
-  /**
-    * Sent by server at beginning of warden handshake. Contains module name & its rc4 seed
-    * Handles WARDEN_SMSG_MODULE_USE message.
-    *
-    * @param decrypted The decrypted message byte buffer.
-    * @return The response byte buffer.
-    */
+  // sent by server at beginning of warden handshake. contains module name & its rc4 seed
   private def handle_WARDEN_SMSG_MODULE_USE(decrypted: ByteBuf): Option[ByteBuf] = {
     val moduleNameArray = new Array[Byte](WARDEN_MODULE_LENGTH)
     decrypted.readBytes(moduleNameArray)
@@ -106,17 +71,11 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     moduleLength = decrypted.readIntLE
     moduleCrypt = new RC4(moduleSeed)
 
-    // We can send WARDEN_CMSG_MODULE_MISSING if we need to download the module, or WARDEN_CMSG_MODULE_OK if we have it
+    // we can send WARDEN_CMSG_MODULE_MISSING if we need to download the module, or WARDEN_CMSG_MODULE_OK if we have it
     Some(formResponse(clientCrypt.crypt(WardenPackets.WARDEN_CMSG_MODULE_OK.toByte)))
   }
 
-  /**
-    * Sent by server while sending us the module payload in case we don't yet have it
-    * Handles WARDEN_SMSG_MODULE_CACHE message.
-    *
-    * @param decrypted The decrypted message byte buffer.
-    * @return The response byte buffer.
-    */
+  // sent by server while sending us the module payload in case we do not yet have it
   private def handle_WARDEN_SMSG_MODULE_CACHE(decrypted: ByteBuf): Option[ByteBuf] = {
     val length = decrypted.readShortLE
     val compressedBytes = decrypted.readBytes(length)
@@ -127,7 +86,7 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
 
     module.get.writeBytes(compressedBytes)
     if (module.get.writableBytes == 0) {
-      // Downloading module is completed, unzip it
+      // downloading module is completed, unzip it
       val moduleArr = new Array[Byte](moduleLength)
       module.get.readBytes(moduleArr)
       val unencryptedModule = moduleCrypt.crypt(moduleArr)
@@ -150,12 +109,6 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     }
   }
 
-  /**
-    * Handles WARDEN_SMSG_CHEAT_CHECKS_REQUEST message.
-    *
-    * @param decrypted The decrypted message byte buffer.
-    * @return The response byte buffer.
-    */
   private def handle_WARDEN_SMSG_CHEAT_CHECKS_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
     val ret = PooledByteBufAllocator.DEFAULT.buffer(53, 53)
 
@@ -176,12 +129,6 @@ class WardenHandler(sessionKey: Array[Byte]) extends StrictLogging {
     Some(formResponse(encrypted))
   }
 
-  /**
-    * Handles WARDEN_SMSG_HASH_REQUEST message.
-    *
-    * @param decrypted The decrypted message byte buffer.
-    * @return The response byte buffer.
-    */
   private def handle_WARDEN_SMSG_HASH_REQUEST(decrypted: ByteBuf): Option[ByteBuf] = {
     val ret = PooledByteBufAllocator.DEFAULT.buffer(21, 21)
 

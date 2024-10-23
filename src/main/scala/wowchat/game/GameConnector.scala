@@ -16,16 +16,6 @@ import io.netty.util.concurrent.Future
 
 import scala.util.Try
 
-/**
-  * Connector class responsible for establishing and managing connection to the game server.
-  *
-  * @param host              The host address of the game server.
-  * @param port              The port number of the game server.
-  * @param realmName         The name of the game realm.
-  * @param realmId           The ID of the game realm.
-  * @param sessionKey        The session key used for encryption and decryption.
-  * @param gameEventCallback The callback for handling game events.
-  */
 class GameConnector(host: String,
                     port: Int,
                     realmName: String,
@@ -41,9 +31,6 @@ class GameConnector(host: String,
   private var channel: Option[Channel] = None
   var handler: Option[GamePacketHandler] = None
 
-  /**
-    * Initiates the connection to the game server.
-    */
   def connect: Unit = {
     if (channel.fold(false)(_.isActive)) {
       logger.error(s"${Ansi.BYELLOW}Refusing to connect to game server. Connection already exists.${Ansi.CLR}")
@@ -114,9 +101,6 @@ class GameConnector(host: String,
     }).channel)
   }
 
-  /**
-    * Disconnects from the game server.
-    */
   def disconnect: Unit = {
     if (Global.group.isShuttingDown || Global.group.isShutdown || Global.group.isTerminated) {
       return

@@ -16,19 +16,11 @@ import io.netty.util.concurrent.Future
 
 import scala.util.Try
 
-/**
-  * A class for connecting to the realm server.
-  *
-  * @param realmConnectionCallback The callback handler for realm connection events.
-  */
 class RealmConnector(realmConnectionCallback: RealmConnectionCallback) extends StrictLogging {
 
   // Represents the active channel
   private var channel: Option[Channel] = None
 
-  /**
-    * Initiates a connection to the realm server.
-    */
   def connect: Unit = {
     logger.info(s"${Ansi.BCYAN}Connecting to realm server ${Ansi.BPURPLE}${Global.config.wow.realmlist.host}:${Global.config.wow.realmlist.port}${Ansi.CLR}")
 
