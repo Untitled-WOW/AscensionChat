@@ -251,7 +251,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       .filter(_.nonEmpty)
       .mkString(" ")
     val enableCommandsChannels = Global.config.discord.enableInviteChannels ++ Global.config.discord.enableKickChannels ++ Global.config.discord.enableWhoGmotdChannels
-    logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
+//    logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
 
     if (!CommandHandler(channel, message)) {
       // Send to all configured WoW channels
