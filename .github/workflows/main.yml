@@ -16,15 +16,12 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.14.0
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.9'
+          maven-version: '3.9.8'
 
       - name: Install Scala
         shell: pwsh
@@ -46,15 +43,12 @@ jobs:
         os: [macos-13, ubuntu-22.04]
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.14.0
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.9'
+          maven-version: '3.9.8'
 
       - name: Install SDKMAN! and Scala
         shell: bash
