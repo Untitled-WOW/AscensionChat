@@ -24,7 +24,7 @@ jobs:
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.8'
+          maven-version: '3.9.9'
 
       - name: Cache Scala installation
         uses: actions/cache@v4
@@ -62,7 +62,7 @@ jobs:
         with:
           java-version: '21'
           java-distribution: 'temurin'
-          maven-version: '3.9.8'
+          maven-version: '3.9.9'
 
       - name: Cache SDKMAN! install
         uses: actions/cache@v4
