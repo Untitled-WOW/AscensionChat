@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'pom.xml'
   pull_request:
     branches:
       - master
+    paths:
+      - 'src/**'
+      - 'pom.xml'
 
 jobs:
   build-windows:
@@ -25,6 +31,7 @@ jobs:
           java-version: '21'
           java-distribution: 'temurin'
           maven-version: '3.9.9'
+          cache: true
 
       - name: Cache Scala installation
         uses: actions/cache@v4
@@ -63,6 +70,7 @@ jobs:
           java-version: '21'
           java-distribution: 'temurin'
           maven-version: '3.9.9'
+          cache: true
 
       - name: Cache SDKMAN! install
         uses: actions/cache@v4
