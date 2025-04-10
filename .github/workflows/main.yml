@@ -16,6 +16,9 @@ jobs:
       fail-fast: false
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.14.0
         with:
@@ -23,7 +26,15 @@ jobs:
           java-distribution: 'temurin'
           maven-version: '3.9.8'
 
+      - name: Cache Scala installation
+        uses: actions/cache@v4
+        id: cache-scala
+        with:
+          path: C:\Program Files (x86)\scala
+          key: windows-scala-2.12.20
+
       - name: Install Scala
+        if: steps.cache-scala.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Invoke-WebRequest -Uri https://downloads.lightbend.com/scala/2.12.20/scala-2.12.20.msi -OutFile scala-2.12.20.msi
@@ -43,6 +54,9 @@ jobs:
         os: [macos-13, ubuntu-22.04]
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.14.0
         with:
@@ -50,7 +64,15 @@ jobs:
           java-distribution: 'temurin'
           maven-version: '3.9.8'
 
+      - name: Cache SDKMAN! install
+        uses: actions/cache@v4
+        id: cache-sdkman
+        with:
+          path: ~/.sdkman
+          key: ${{ runner.os }}-sdkman
+
       - name: Install SDKMAN! and Scala
+        if: steps.cache-sdkman.outputs.cache-hit != 'true'
         shell: bash
         run: |
           curl -s "https://get.sdkman.io" | bash
