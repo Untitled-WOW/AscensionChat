@@ -27,7 +27,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   with GamePackets with StrictLogging {
 
   private val jda = JDABuilder
-    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EMOJIS_AND_STICKERS, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
+    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EXPRESSIONS, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
     .setMemberCachePolicy(MemberCachePolicy.ALL)
     .disableCache(CacheFlag.VOICE_STATE)
     .addEventListeners(this)
