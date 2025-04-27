@@ -8,7 +8,8 @@ import wowchat.game.GameConnector
 import wowchat.realm.{RealmConnectionCallback, RealmConnector}
 
 import com.typesafe.scalalogging.StrictLogging
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.MultiThreadIoEventLoopGroup
+import io.netty.channel.nio.NioIoHandler
 
 import scala.io.Source
 
@@ -49,7 +50,7 @@ ${Ansi.GREEN} YP   YP `8888Y'  `Y88P' Y88888P VP   V8P `8888Y' Y888888P `Y88P'  
       private val reconnectDelay = new ReconnectDelay
 
       override def connect: Unit = {
-        Global.group = new NioEventLoopGroup
+        Global.group = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory())
 
         val realmConnector = new RealmConnector(new RealmConnectionCallback {
           override def success(host: String, port: Int, realmName: String, realmId: Int, sessionKey: Array[Byte]): Unit = {
