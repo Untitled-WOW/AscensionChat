@@ -23,10 +23,11 @@ Currently supported versions are:
   - Tag players on Discord from WoW using `@and_part_or_all_of_their_name`
   - Tag `@here`, `@everyone`, and `"@Even Roles With Spaces"` _(include quotes around them)_
 - **Custom Commands**:
-  - Check who is online in your guild with `?who` (also displays level and current area)
-  - Invite a player to your guild with `?ginvite` (character bot uses must have Guild Invite perms)
-  - Kick a player from your guild with `?gkick` (character bot uses bot must have Guild Kick perms)
-  - Query other players in the world
+  - Check who is online in your guild with `?who` or `?online` (also displays level and current area)
+  - Invite a player to your guild with `?ginvite`, `?invite` or `?inv` followed by their character name (character bot uses must have Guild Invite perms)
+  - Kick a player from your guild with `?gkick` followed by their character name (character bot uses must have Guild Kick perms)
+  - Promote a player in your guild with `?gpromote` or `?promote` followed by their character name (character bot uses must have Guild Promote perms)
+  - Promote a player in your guild with `?gdemote` or `?demote` followed by their character name (character bot uses must have Guild Demote perms)
 - **Highly Portable**:
   - Runs as a Java program and works on **Windows**, **Mac**, and **Linux**
 
