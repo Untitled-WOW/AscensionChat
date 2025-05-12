@@ -24,6 +24,7 @@ Currently supported versions are:
   - Tag `@here`, `@everyone`, and `"@Even Roles With Spaces"` _(include quotes around them)_
 - **Custom Commands**:
   - Check who is online in your guild with `?who` or `?online` (also displays level and current area)
+  - Get the current Guild Message of the Day with `?gmotd`
   - Invite a player to your guild with `?ginvite`, `?invite` or `?inv` followed by their character name (character bot uses must have Guild Invite perms)
   - Kick a player from your guild with `?gkick` followed by their character name (character bot uses must have Guild Kick perms)
   - Promote a player in your guild with `?gpromote` or `?promote` followed by their character name (character bot uses must have Guild Promote perms)
