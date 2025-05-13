@@ -217,6 +217,30 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
     })
   }
 
+  protected def sendSetGmotd(newMotd: String): Unit = {
+    ctx.foreach(ctx => {
+      val out = PooledByteBufAllocator.DEFAULT.buffer(128, 128) // 127 for MotD + 1 for null terminator
+      out.writeBytes(newMotd.getBytes("UTF-8"))
+      out.writeByte(0) // Null terminator
+      val packet = Packet(CMSG_GUILD_MOTD, out)
+      ctx.writeAndFlush(packet)
+    })
+  }
+
+  override def handleSetGmotd(newMotd: String): Option[String] = {
+    if (newMotd.length > 127) {
+      return Some("Error: MotD exceeds the maximum allowed length of 127 characters.")
+    }
+  
+    sendSetGmotd(newMotd)
+  
+    if (newMotd.isEmpty) {
+      Some("User did not give a GMotD to set. Guild MotD cleared.")
+    } else {
+      Some(s"Guild MotD has been set to: $newMotd")
+    }
+  }
+
   protected def sendGuildInvite(target: String): Unit = {
     ctx.foreach(ctx => {
       val out = PooledByteBufAllocator.DEFAULT.buffer(64, 64)

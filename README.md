@@ -24,11 +24,13 @@ Currently supported versions are:
   - Tag `@here`, `@everyone`, and `"@Even Roles With Spaces"` _(include quotes around them)_
 - **Custom Commands**:
   - Check who is online in your guild with `?who` or `?online` (also displays level and current area)
-  - Get the current Guild Message of the Day with `?gmotd`
+  - Get the stored Guild Message of the Day with `?gmotd`
   - Invite a player to your guild with `?ginvite`, `?invite` or `?inv` followed by their character name (character bot uses must have Guild Invite perms)
   - Kick a player from your guild with `?gkick` followed by their character name (character bot uses must have Guild Kick perms)
   - Promote a player in your guild with `?gpromote` or `?promote` followed by their character name (character bot uses must have Guild Promote perms)
   - Promote a player in your guild with `?gdemote` or `?demote` followed by their character name (character bot uses must have Guild Demote perms)
+  - Set the Guild Message of the Day with `?setgmotd`, `?setmotd`, `?gmotdset` or `?motdset` followed by what you want to set as the GMotD (character bot uses must have Set Guild Message perms)
+    - If no message is included after these setmotd commands, the GMotD will be **CLEARED**
 - **Highly Portable**:
   - Runs as a Java program and works on **Windows**, **Mac**, and **Linux**
 

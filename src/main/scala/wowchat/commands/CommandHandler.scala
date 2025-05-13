@@ -61,6 +61,17 @@ object CommandHandler extends StrictLogging {
             fromChannel.sendMessage(NOT_ALLOWED).queue()
             return true
           }
+        case "setgmotd" | "gmotdset" | "setmotd" | "motdset" =>
+          if (Global.config.discord.enableSetGmotdChannels.contains(incChannel)) {
+            val newMotd = if (splt.length > 1) splt.tail.mkString(" ") else ""
+            Global.game.fold({
+              fromChannel.sendMessage(NOT_ONLINE).queue()
+              return true
+            })(_.handleSetGmotd(newMotd))
+          } else {
+            fromChannel.sendMessage(NOT_ALLOWED).queue()
+            return true
+          }
         case "invite" | "inv" | "ginvite" =>
           if (Global.config.discord.enableInviteChannels.contains(incChannel)) {
             fromChannel.sendMessage(s"Invite sent: ${splt(1)}").queue()

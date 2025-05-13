@@ -8,6 +8,8 @@ trait GameCommandHandler {
 
   def handleWho(arguments: Option[String]): Option[String]
 
+  def handleSetGmotd(newMotd: String): Option[String]
+
   def handleGmotd(): Option[String]
 
   def handleGuildInvite(target: String): Option[String]
