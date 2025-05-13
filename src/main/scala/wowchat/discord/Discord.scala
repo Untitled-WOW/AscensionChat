@@ -64,7 +64,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
 
       discordChannels.foreach {
         case (channel, channelConfig) =>
-		  if (!channelConfig.gmchat || (channelConfig.gmchat && gmMessage)) {
+          if (!channelConfig.gmchat || (channelConfig.gmchat && gmMessage)) {
             var errors = mutable.ArrayBuffer.empty[String]
 
             if (message == "?who" || message == "?online") {
