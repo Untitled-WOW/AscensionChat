@@ -66,7 +66,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         case (channel, channelConfig) =>
           if (!channelConfig.gmchat || (channelConfig.gmchat && gmMessage)) {
             var errors = mutable.ArrayBuffer.empty[String]
-
+/** i dont see the purpose of this
             if (message == "?who" || message == "?online") {
               channel.sendMessage("?who").queue()
             } else if (message.startsWith("?invite ") || message.startsWith("?inv ") || message.startsWith("?ginvite ")) {
@@ -75,8 +75,10 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
               channel.sendMessage(message).queue()
             } else if (message.startsWith("?demote ") || message.startsWith("?gdemote ")) {
               channel.sendMessage(message).queue()
+            } else if (message.startsWith("?gmotd") || message.startsWith("?setgmotd") || message.startsWith("?gmotdset") || message.startsWith("?setmotd") || message.startsWith("?motdset")) {
+              channel.sendMessage(message).queue()
             }
-
+**/
             val parsedResolvedTags = from.map(_ => {
               messageResolver.resolveTags(channel, parsedLinks, errors += _)
             })
