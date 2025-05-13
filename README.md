@@ -30,7 +30,7 @@ Currently supported versions are:
   - Promote a player in your guild with `?gpromote` or `?promote` followed by their character name (character bot uses must have Guild Promote perms)
   - Promote a player in your guild with `?gdemote` or `?demote` followed by their character name (character bot uses must have Guild Demote perms)
   - Set the Guild Message of the Day with `?setgmotd`, `?setmotd`, `?gmotdset` or `?motdset` followed by what you want to set as the GMotD (character bot uses must have Set Guild Message perms)
-    - If no message is included after these setmotd commands, the GMotD will be **CLEARED**
+    - If no message is included after these setmotd commands, the GMotD will be **CLEARED**. Max length 127 characters
 - **Highly Portable**:
   - Runs as a Java program and works on **Windows**, **Mac**, and **Linux**
 
