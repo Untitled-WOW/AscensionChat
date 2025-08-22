@@ -6,7 +6,7 @@
 
     <groupId>ascensionchat</groupId>
     <artifactId>ascensionchat</artifactId>
-    <version>3.4.2</version>
+    <version>4.0.0</version>
 
     <properties>
         <java.version>21</java.version>
@@ -65,6 +65,13 @@
             <artifactId>emoji-java</artifactId>
             <version>5.1.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.81</version>
+        </dependency>
+
     </dependencies>
 
     <build>

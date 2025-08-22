@@ -384,7 +384,7 @@ class GamePacketHandler(realmId: Int, realmName: String, sessionKey: Array[Byte]
   }
 
   protected def parseAuthChallenge(msg: Packet): AuthChallengeMessage = {
-    val account = Global.config.wow.account
+    val account = Global.config.wow.account.getBytes("UTF-8")
 
     val serverSeed = msg.byteBuf.readInt
     val clientSeed = Random.nextInt
