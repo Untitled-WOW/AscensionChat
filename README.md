@@ -211,3 +211,4 @@ Thank you to the following people/projects for helping make this project possibl
 - <https://github.com/fjaros/wowchat>
 - <https://github.com/Szyler/AscensionChat>
 - <https://github.com/xanthics/AscensionChat>
+- <https://github.com/windymindy/wowchat_ascension>
