@@ -75,8 +75,7 @@ class RealmPacketDecoder extends ByteToMessageDecoder with StrictLogging {
     val byteBuf = in.readBytes(size)
     val packet = Packet(id, byteBuf)
 
-    // Uncomment the following line to enable logging of received packets
-    // logger.debug(f"RECV REALM PACKET: $id%04X - ${ByteUtils.toHexString(byteBuf, true, false)}")
+     logger.debug(f"RECV REALM PACKET: $id%04X - ${ByteUtils.toHexString(byteBuf, true, false)}")
 
     out.add(packet)
     size = 0
