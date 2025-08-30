@@ -53,6 +53,7 @@ object WowChatConfig extends GamePackets {
         getOpt[Set[String]](discordConf, "enable_kick_channels").getOrElse(Set()),
         getOpt[Set[String]](discordConf, "enable_promote_channels").getOrElse(Set()),
         getOpt[Set[String]](discordConf, "enable_demote_channels").getOrElse(Set()),
+        getOpt[Set[String]](discordConf, "enable_setgmotd_channels").getOrElse(Set()),
         getOpt[Set[String]](discordConf, "enable_who_gmotd_channels").getOrElse(Set()),
         getOpt[Boolean](discordConf, "enable_tag_failed_notifications").getOrElse(true),
         getOpt[Int](discordConf, "spec_len").getOrElse(0)
