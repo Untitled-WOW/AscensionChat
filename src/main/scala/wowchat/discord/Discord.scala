@@ -27,9 +27,16 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   with GamePackets with StrictLogging {
 
   private val jda = JDABuilder
-    .createDefault(Global.config.discord.token, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_PRESENCES, GatewayIntent.GUILD_EXPRESSIONS, GatewayIntent.SCHEDULED_EVENTS, GatewayIntent.MESSAGE_CONTENT)
+    .createDefault(Global.config.discord.token,
+      GatewayIntent.GUILD_MESSAGES,
+      GatewayIntent.GUILD_MEMBERS,
+      GatewayIntent.GUILD_PRESENCES,
+      GatewayIntent.GUILD_EXPRESSIONS,
+      GatewayIntent.SCHEDULED_EVENTS,
+      GatewayIntent.MESSAGE_CONTENT)
     .setMemberCachePolicy(MemberCachePolicy.ALL)
-    .disableCache(CacheFlag.VOICE_STATE)
+    .disableCache(CacheFlag.SCHEDULED_EVENTS,
+      CacheFlag.VOICE_STATE)
     .addEventListeners(this)
     .build
 
@@ -65,7 +72,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
       discordChannels.foreach {
         case (channel, channelConfig) =>
           if (!channelConfig.gmchat || (channelConfig.gmchat && gmMessage)) {
-            var errors = mutable.ArrayBuffer.empty[String]
+            val errors = mutable.ArrayBuffer.empty[String]
 /** i dont see the purpose of this
             if (message == "?who" || message == "?online") {
               channel.sendMessage("?who").queue()
@@ -168,7 +175,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
         eligibleDiscordChannels.foreach(channel => {
           configChannels
             .filter {
-              case (name, channelConfig) =>
+              case (name, _) =>
                 name.equalsIgnoreCase(channel.getName) ||
                 name == channel.getId
             }
@@ -227,7 +234,7 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
   override def onShutdown(event: ShutdownEvent): Unit = {
     event.getCloseCode match {
       case CloseCode.DISALLOWED_INTENTS =>
-        logger.error(s"${Ansi.BRED}Per new Discord rules, you must check the ${Ansi.BOLD}PRESENCE INTENT ${Ansi.CLR}and ${Ansi.BOLD}SERVER MEMBERS INTENT ${Ansi.CLR}boxes under ${Ansi.BOLD}Privileged Gateway Intents ${Ansi.CLR}in the developer portal for this bot to work. You can find more info at${Ansi.CLR} https://discord.com/developers/docs/topics/gateway#privileged-intents")
+        logger.error(s"${Ansi.BRED}Per new Discord rules, you must check the ${Ansi.BOLD}PRESENCE INTENT, SERVER MEMBERS INTENT, and MESSAGE CONTENT INTENT ${Ansi.CLR}boxes under ${Ansi.BOLD}Privileged Gateway Intents ${Ansi.CLR}in the developer portal for this bot to work. You can find more info at${Ansi.CLR} https://discord.com/developers/docs/topics/gateway#privileged-intents")
       case _ =>
     }
   }
@@ -256,7 +263,6 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
     val message = (sanitizeMessage(event.getMessage.getContentDisplay) +: event.getMessage.getAttachments.asScala.map(_.getUrl))
       .filter(_.nonEmpty)
       .mkString(" ")
-    val enableCommandsChannels = Global.config.discord.enableInviteChannels ++ Global.config.discord.enableKickChannels ++ Global.config.discord.enablePromoteChannels ++ Global.config.discord.enableDemoteChannels ++ Global.config.discord.enableWhoGmotdChannels
     logger.debug(s"RECV DISCORD MESSAGE: [${channel.getName}] [$effectiveName]: $message")
 
     if (!CommandHandler(channel, message)) {

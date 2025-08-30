@@ -277,16 +277,57 @@ trait GamePackets {
     val AUTH_DB_BUSY = 0x1f
     val AUTH_SUSPENDED = 0x20
     val AUTH_PARENTAL_CONTROL = 0x21
+    val AUTH_LOCKED_ENFORCED = 0x22
+    val REALM_LIST_IN_PROGRESS = 0x23
+    val REALM_LIST_SUCCESS = 0x24
+    val REALM_LIST_FAILED = 0x25
+    val REALM_LIST_INVALID = 0x26
+    val REALM_LIST_REALM_NOT_FOUND = 0x27
+
+    def valueOf(authResult: Int): String = {
+      authResult match {
+        case AUTH_OK => "AUTH_OK"
+        case AUTH_FAILED => "AUTH_FAILED"
+        case AUTH_REJECT => "AUTH_REJECT"
+        case AUTH_BAD_SERVER_PROOF => "AUTH_BAD_SERVER_PROOF"
+        case AUTH_UNAVAILABLE => "AUTH_UNAVAILABLE"
+        case AUTH_SYSTEM_ERROR => "AUTH_SYSTEM_ERROR"
+        case AUTH_BILLING_ERROR => "AUTH_BILLING_ERROR"
+        case AUTH_BILLING_EXPIRED => "AUTH_BILLING_EXPIRED"
+        case AUTH_VERSION_MISMATCH => "AUTH_VERSION_MISMATCH"
+        case AUTH_UNKNOWN_ACCOUNT => "AUTH_UNKNOWN_ACCOUNT"
+        case AUTH_INCORRECT_PASSWORD => "AUTH_INCORRECT_PASSWORD"
+        case AUTH_SESSION_EXPIRED => "AUTH_SESSION_EXPIRED"
+        case AUTH_SERVER_SHUTTING_DOWN => "AUTH_SERVER_SHUTTING_DOWN"
+        case AUTH_ALREADY_LOGGING_IN => "AUTH_ALREADY_LOGGING_IN"
+        case AUTH_LOGIN_SERVER_NOT_FOUND => "AUTH_LOGIN_SERVER_NOT_FOUND"
+        case AUTH_WAIT_QUEUE => "AUTH_WAIT_QUEUE"
+        case AUTH_BANNED => "AUTH_BANNED"
+        case AUTH_ALREADY_ONLINE => "AUTH_ALREADY_ONLINE"
+        case AUTH_NO_TIME => "AUTH_NO_TIME"
+        case AUTH_DB_BUSY => "AUTH_DB_BUSY"
+        case AUTH_SUSPENDED => "AUTH_SUSPENDED"
+        case AUTH_PARENTAL_CONTROL => "AUTH_PARENTAL_CONTROL"
+        case AUTH_LOCKED_ENFORCED => "AUTH_LOCKED_ENFORCED"
+        case REALM_LIST_IN_PROGRESS => "REALM_LIST_IN_PROGRESS"
+        case REALM_LIST_SUCCESS => "REALM_LIST_SUCCESS"
+        case REALM_LIST_FAILED => "REALM_LIST_FAILED"
+        case REALM_LIST_INVALID => "REALM_LIST_INVALID"
+        case REALM_LIST_REALM_NOT_FOUND => "REALM_LIST_REALM_NOT_FOUND"
+        case x => f"0x$x%02X"
+      }
+    }
 
     def getMessage(authResult: Int): String = {
       authResult match {
         case AUTH_OK => s"${Ansi.BGREEN}Success!${Ansi.CLR}"
-        case AUTH_UNKNOWN_ACCOUNT | AUTH_INCORRECT_PASSWORD => s"${Ansi.BRED}Incorrect username or password!${Ansi.CLR}"
-        case AUTH_VERSION_MISMATCH => s"${Ansi.BRED}Invalid game version for this server!${Ansi.CLR}"
+        case AUTH_UNKNOWN_ACCOUNT => s"${Ansi.BRED}Invalid username!${Ansi.CLR}"
+        case AUTH_INCORRECT_PASSWORD => s"${Ansi.BRED}Incorrect password for this username!${Ansi.CLR}"
+        case AUTH_VERSION_MISMATCH => s"${Ansi.BRED}Invalid game version for this server!${Ansi.CLR} Is your game_build in config correct?"
         case AUTH_BANNED => s"${Ansi.BRED}Your account has been banned!${Ansi.CLR}"
         case AUTH_ALREADY_LOGGING_IN | AUTH_ALREADY_ONLINE => s"${Ansi.BRED}Your account is already online! Log it off or wait a minute if already logging off.${Ansi.CLR}"
         case AUTH_SUSPENDED => s"${Ansi.BRED}Your account has been suspended!${Ansi.CLR}"
-        case x => f"${Ansi.BRED}Failed to login to game server! ${Ansi.CLR}Error code: $x%02X"
+        case x => s"${Ansi.BRED}Failed to login to game server! ${Ansi.CLR}Error code: ${valueOf(x)}"
       }
     }
   }
@@ -351,8 +392,8 @@ trait GamePackets {
 
     def getId(channel: String) = {
       channel.takeWhile(_ != ' ').toLowerCase match {
-        case "general" => GENERAL
-        case "trade" => TRADE
+        case "general" | "ascension" => GENERAL
+        case "trade" | "newcomers" => TRADE
         case "localdefense" => LOCAL_DEFENSE
         case "worlddefense" => WORLD_DEFENSE
         case "guildrecruitment" => GUILD_RECRUITMENT

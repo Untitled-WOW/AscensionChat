@@ -2,7 +2,6 @@ package wowchat.common
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-
 import io.netty.channel.EventLoopGroup
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import wowchat.discord.Discord

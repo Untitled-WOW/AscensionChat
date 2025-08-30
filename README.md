@@ -12,6 +12,11 @@ Currently supported versions are:
 - Cataclysm (4.3.4 build 15595)
 - Mists of Pandaria (5.4.8 build 18414)
 
+Some servers have their own modifications which deviate from the original client implementation. For those, consider these dedicated forks which add the custom features of those servers:
+
+- Ascension: <https://github.com/Szyler/AscensionChat>
+- Turtle WoW: <https://github.com/Zebouski/WoWChat-Turtle>
+
 ## ✨ Features
 
 - **Clientless**: Does not need the WoW Client to be open to run
@@ -107,6 +112,16 @@ You can now click items/achievements that players link, which will send you stra
     - **NOTE:** For Ascension, I cannot get past character selection if `Mac` is set on MacOS. Having `platform=Windows` seems to work without issue.
   - `locale`: Optionally specify a locale if you want to join locale-specific global channels. **enUS** is the default locale.
   - `enable_server_motd`: Set to `0` to ignore sending the server's MotD. Set to `1` to send the server's MotD as a SYSTEM message.
+  - `version`: put either `1.12.1`, `2.4.3`, `3.3.5`, `4.3.4`, or `5.4.8` based on the server's expansion.
+  - `build`: you can include a `build=<build number>` setting in the config, if you are using a custom build version on your server.
+    - Optionally you can also use **realm_build** and **game_build** options if the number used is different for each server. See <https://github.com/fjaros/wowchat/issues/90>
+  - `realmlist`: this is server's realmlist, same as in your `realmlist.wtf` file.
+    - Example values are `logon.lightshope.org` or `wow.gamer-district.org`
+  - `realm`: This is the realm name the Bot will connect to.
+    - It is the Text shown on top of character list window. Put ONLY the name, do NOT put the realm type like PVP or PVE.
+    - In the following example, the **realm** value is The Construct
+
+        ![realm-construct](https://raw.githubusercontent.com/fjaros/wowchat/master/images/example3.png)
   - `account`: Replace `REPLACE-ME` with the bot's Ascension account name.
   - `password`: Replace `REPLACE-ME` with the bot's WoW Ascension password.
   - `character`: Replace `REPLACE-ME` with the bot's character name, as it is shown in the character list.

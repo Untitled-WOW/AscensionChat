@@ -42,7 +42,11 @@ ${Ansi.GREEN} YP   YP `8888Y'  `Y88P' Y88888P VP   V8P `8888Y' Y888888P `Y88P'  
     }
     Global.config = WowChatConfig(confFile)
 
-    checkForNewVersion
+    try {
+      checkForNewVersion
+    } catch {
+      case e: Exception => logger.error("Failed to check for a new version!", e)
+    }
 
     val gameConnectionController: CommonConnectionCallback = new CommonConnectionCallback {
 
