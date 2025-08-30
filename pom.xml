@@ -76,6 +76,9 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <includes>
+                    <include>version.properties</include>
+                </includes>
             </resource>
         </resources>
         <plugins>
@@ -129,7 +132,6 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
-                                <exclude>**/module-info.class</exclude>
                                 <exclude>logback.xml</exclude>
                                 <exclude>*.conf</exclude>
                             </excludes>
@@ -163,14 +165,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-resources-plugin</artifactId>
-              <version>3.3.1</version>
-              <configuration>
-                <propertiesEncoding>UTF-8</propertiesEncoding>
-              </configuration>
             </plugin>
         </plugins>
     </build>
