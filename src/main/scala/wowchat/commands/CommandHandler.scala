@@ -120,12 +120,13 @@ object CommandHandler extends StrictLogging {
 // i dont like it, but it works...
         case "help" | "commands" =>
           val allowedCommands = Seq(
+            ("help", "- `?help`/`?commands` = Shows commands available to channel the command is sent in"),
             ("who", "- `?who`/`?online` = Get list of currently online guild members, their level, and their in-game zone/location"),
             ("gmotd", "- `?gmotd` = Get current Guild Message of the Day"),
             ("setgmotd", "- `?setgmotd Message`/`?setmotd Message`/`?gmotdset Message`/`?motdset Message` = Set/Clear the Guild Message of the Day (max 127 chars)\n  - ***CAUTION:*** Using without message content **WILL** clear the current GMotD"),
             ("invite", "- `?invite CharName`/`?inv CharName`/`?ginvite CharName` = Invite `CharName` to join the guild"),
             ("gkick", "- `?gkick CharName` = Kick `CharName` from the guild"),
-            ("gpromote", "- `?gpromote CharName`/`?promote CharName` = Promote `CharName` (cannot promote higher than bot's guild rank)"),
+            ("gpromote", "- `?gpromote CharName`/`?promote CharName` = Promote `CharName` (cannot promote higher than bot's rank in guild)"),
             ("gdemote", "- `?gdemote CharName`/`?demote CharName` = Demote `CharName`\n  - `?promote` & `?demote` only do 1 rank at a time; check bot messages in the configured channel(s) to see the current rank")
           ).filter {
             case (cmd, _) =>
