@@ -33,6 +33,7 @@ object CommandHandler extends StrictLogging {
     val possibleCommand = splt(0).toLowerCase
     val arguments = if (splt.length > 1 && splt(1).length <= 16) Some(splt(1)) else None
     val incChannel = fromChannel.getName.toLowerCase
+// TODO: make this into a map, allow help command to spit out available commands dynamically
     Try {
       possibleCommand match {
         case "who" | "online" =>
@@ -116,6 +117,43 @@ object CommandHandler extends StrictLogging {
             fromChannel.sendMessage(NOT_ALLOWED).queue()
             return true
           }
+// i dont like it, but it works...
+        case "help" | "commands" =>
+          val allowedCommands = Seq(
+            ("who", "- `?who`/`?online` = Get list of currently online guild members, their level, and their in-game zone/location"),
+            ("gmotd", "- `?gmotd` = Get current Guild Message of the Day"),
+            ("setgmotd", "- `?setgmotd Message`/`?setmotd Message`/`?gmotdset Message`/`?motdset Message` = Set/Clear the Guild Message of the Day (max 127 chars)\n  - ***CAUTION:*** Using without message content **WILL** clear the current GMotD"),
+            ("invite", "- `?invite CharName`/`?inv CharName`/`?ginvite CharName` = Invite `CharName` to join the guild"),
+            ("gkick", "- `?gkick CharName` = Kick `CharName` from the guild"),
+            ("gpromote", "- `?gpromote CharName`/`?promote CharName` = Promote `CharName` (cannot promote higher than bot's guild rank)"),
+            ("gdemote", "- `?gdemote CharName`/`?demote CharName` = Demote `CharName`\n  - `?promote` & `?demote` only do 1 rank at a time; check bot messages in the configured channel(s) to see the current rank")
+          ).filter {
+            case (cmd, _) =>
+              cmd match {
+                case "who" | "online" | "gmotd" =>
+                  Global.config.discord.enableWhoGmotdChannels.isEmpty ||
+                    Global.config.discord.enableWhoGmotdChannels.contains(incChannel)
+                case "setgmotd" =>
+                  Global.config.discord.enableSetGmotdChannels.contains(incChannel)
+                case "invite" =>
+                  Global.config.discord.enableInviteChannels.contains(incChannel)
+                case "gkick" =>
+                  Global.config.discord.enableKickChannels.contains(incChannel)
+                case "gpromote" =>
+                  Global.config.discord.enablePromoteChannels.contains(incChannel)
+                case "gdemote" =>
+                  Global.config.discord.enableDemoteChannels.contains(incChannel)
+                case _ => false
+              }
+          }.map(_._2)
+
+          val helpMessage =
+            if (allowedCommands.isEmpty) "No commands available in this channel."
+            else "Available commands:\n" + allowedCommands.mkString("\n")
+
+          fromChannel.sendMessage(helpMessage).queue()
+          return true
+
       }
     }.fold(throwable => {
       // command not found, should send to wow chat
