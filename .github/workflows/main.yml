@@ -2,14 +2,12 @@ name: Compile and Run
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
       - 'src/**'
       - 'pom.xml'
   pull_request:
-    branches:
-      - master
+    branches: [master]
     paths:
       - 'src/**'
       - 'pom.xml'
@@ -22,16 +20,21 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Sparse Checkout Code
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            pom.xml
+            src/
 
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.18.0
         with:
-          java-version: '21'
+          java-version: '8'
           java-distribution: 'temurin'
           maven-version: '3.9.9'
           cache-enabled: true
+          checkout: false
 
       - name: Cache Scala installation
         uses: actions/cache@v4
@@ -58,26 +61,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, ubuntu-22.04]
+        os:
+          - macos-13
+          - macos-latest
+          - ubuntu-22.04
+          - ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Sparse Checkout Code
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            pom.xml
+            src/
 
       - name: Setup Maven and Java
         uses: s4u/setup-maven-action@v1.18.0
         with:
-          java-version: '21'
+          java-version: '8'
           java-distribution: 'temurin'
           maven-version: '3.9.9'
           cache-enabled: true
+          checkout: false
 
       - name: Cache SDKMAN! install
         uses: actions/cache@v4
         id: cache-sdkman
         with:
           path: ~/.sdkman
-          key: ${{ runner.os }}-sdkman
+          key: ${{ runner.os }}-sdkman-scala-2.12.20
 
       - name: Install SDKMAN! and Scala
         if: steps.cache-sdkman.outputs.cache-hit != 'true'
