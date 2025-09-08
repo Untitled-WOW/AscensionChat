@@ -59,13 +59,18 @@ jobs:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
-        os:
-          - macos-13
-          - macos-latest
-          - ubuntu-22.04
-          - ubuntu-latest
+        include:
+          - os: macos-13
+            java: 8
+          - os: macos-latest
+            java: 11
+          - os: ubuntu-22.04
+            java: 8
+          - os: ubuntu-latest
+            java: 8
+          - os: windows-latest
+            java: 8
 
     steps:
       - name: Sparse Checkout Code
