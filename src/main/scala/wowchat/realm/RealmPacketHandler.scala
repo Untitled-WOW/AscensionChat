@@ -4,7 +4,7 @@ import wowchat.common._
 import wowchat.Ansi
 
 import com.typesafe.scalalogging.StrictLogging
-import io.netty.buffer.{ByteBuf, PooledByteBufAllocator}
+import io.netty.buffer.{ByteBuf, PooledByteBufAllocator, Unpooled}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
 
 private[realm] case class RealmList(name: String, address: String, realmId: Byte)
@@ -13,11 +13,8 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
   extends ChannelInboundHandlerAdapter with StrictLogging {
 
   private var handshake : HandshakeAscension = _
-
   private var ctx: Option[ChannelHandlerContext] = None
-
   private var expectedDisconnect = false
-
   // Issue 57, certain servers return logon proof packet for the 2nd time when asking for friends list with an error code.
   // Implement a state to ignore it if/when it comes a second time
   private var logonState = 0
@@ -74,6 +71,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     //  need to add a separate expansion enumeration element, but the checks are all over the place.
     handshake = new HandshakeAscension
 
+    val version_ = "0025_3851_11B0_5968.".getBytes("utf-8") // todo put into settings
     val version = WowChatConfig.getVersion.split("\\.").map(_.toByte)
     val platformString = Global.config.wow.platform match {
       case Platform.Windows => "Win"
@@ -84,29 +82,46 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val password = Global.config.wow.password
     val (password_encrypted, password_encrypted_tag) = handshake.encrypt_password(password)
 
-    val data = PooledByteBufAllocator.DEFAULT.buffer(351, 423)
-    data.writeByte(8) // protocol version
-    data.writeShortLE(348 + password.length) // size
-    data.writeIntLE(ByteUtils.stringToInt("WoW"))
-    data.writeByte(version(0))
-    data.writeByte(version(1))
-    data.writeByte(version(2))
-    data.writeShortLE(WowChatConfig.getRealmBuild)
-    data.writeIntLE(ByteUtils.stringToInt("x86"))
-    data.writeIntLE(ByteUtils.stringToInt(platformString))
-    data.writeIntLE(ByteUtils.stringToInt(localeString))
-    data.writeIntLE(0)
-    data.writeByte(127)
-    data.writeByte(0)
-    data.writeByte(0)
-    data.writeByte(1)
-    data.writeBytes(login)
-    data.writeZero(255 - login.length) // todo check configuration input length before starting
-    data.writeBytes(handshake.key_public)
-    data.writeBytes(handshake.random_nonce)
-    data.writeBytes(password_encrypted_tag)
-    data.writeIntLE(password.length)
-    data.writeBytes(password_encrypted)
+    val data_1_ = new Array[Byte](605 + password.length)
+    val data_1 = Unpooled.wrappedBuffer(data_1_).resetReaderIndex.resetWriterIndex
+    data_1.writeBytes(version_)
+    data_1.writeZero(256 - version_.length)
+    data_1.writeIntLE(ByteUtils.stringToInt("WoW"))
+    data_1.writeByte(version(0))
+    data_1.writeByte(version(1))
+    data_1.writeByte(version(2))
+    data_1.writeShortLE(WowChatConfig.getRealmBuild)
+    data_1.writeIntLE(ByteUtils.stringToInt("x86"))
+    data_1.writeIntLE(ByteUtils.stringToInt(platformString))
+    data_1.writeIntLE(ByteUtils.stringToInt(localeString))
+    data_1.writeIntLE(180) // ?
+    data_1.writeByte(127)
+    data_1.writeByte(0)
+    data_1.writeByte(0)
+    data_1.writeByte(1)
+    data_1.writeBytes(login)
+    data_1.writeZero(256 - login.length) // todo check configuration input length before starting
+    data_1.writeBytes(handshake.key_public)
+    data_1.writeBytes(handshake.random_nonce_1)
+    data_1.writeBytes(password_encrypted_tag)
+    data_1.writeIntLE(password.length)
+    data_1.writeBytes(password_encrypted)
+    val data_2_ = new Array[Byte](8)
+    val data_2 = Unpooled.wrappedBuffer(data_2_).resetReaderIndex.resetWriterIndex
+    data_2.writeByte(RealmPackets.CMD_AUTH_LOGON_CHALLENGE)
+    data_2.writeByte(8) // protocol version
+    data_2.writeShortLE(605 + 16 + 4 + password.length)
+    data_2.writeBytes(java.util.HexFormat.of.parseHex("fcf4f4e6"))
+    val data_1__ = data_1_.dropRight(4) // been feeling extra fancy? or maybe just a bug?
+    val (data_3, data_3_tag) = handshake.encrypt_packet(data_1__, data_2_)
+    val mask = 0xed.toByte
+    val data_4 = data_3.map(v => (v ^ mask).toByte)
+    val data = PooledByteBufAllocator.DEFAULT.buffer(625 + 72, 1024)
+    data.writeBytes(data_2.skipBytes(1))
+    data.writeBytes(data_3_tag)
+    data.writeBytes(data_4)
+    data.writeBytes(data_1_.takeRight(4))
+
     ctx.writeAndFlush(Packet(RealmPackets.CMD_AUTH_LOGON_CHALLENGE, data))
 
     super.channelActive(ctx)
@@ -134,14 +149,12 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
   private def handle_CMD_AUTH_LOGON_CHALLENGE(msg: Packet): Unit = {
     val error = msg.byteBuf.readByte // ?
     val result = msg.byteBuf.readByte
-
     if (!RealmPackets.AuthResult.isSuccess(result)) {
       logger.error(RealmPackets.AuthResult.getMessage(result))
       ctx.get.close
       realmConnectionCallback.error
       return
     }
-
 
     val srb_b = toArray(msg.byteBuf, 32)
     val srp_g_length = msg.byteBuf.readByte
@@ -150,8 +163,8 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val srp_n = toArray(msg.byteBuf, srp_n_length)
     val srp_salt = toArray(msg.byteBuf, 32)
     val srp_unknown = toArray(msg.byteBuf, 16)
-    val securityFlag = msg.byteBuf.readByte
-    if (securityFlag != 0) {
+    val security_flag = msg.byteBuf.readByte
+    if (security_flag != 0) {
       logger.error(s"${Ansi.BYELLOW}Two-factor authentication is enabled for this account. Please disable it or use another account.${Ansi.CLR}")
       ctx.get.close
       realmConnectionCallback.error
@@ -175,7 +188,7 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       expectedDisconnect = true
       ctx.get.close
       if (result == RealmPackets.AuthResult.WOW_FAIL_UNKNOWN_ACCOUNT) {
-        // It seems sometimes this error happens even on a legit connect. so just run regular reconnect loop
+        // seems sometimes this error happens even on a legit connect. so just run regular reconnect loop
         realmConnectionCallback.disconnected
       } else {
         realmConnectionCallback.error
@@ -188,14 +201,15 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
       logger.error("Logon proof generated by client and server differ. Something is very wrong! Will try to reconnect in a moment.")
       expectedDisconnect = true
       ctx.get.close
-      // Also sometimes happens on a legit connect
+      // Also sometimes happens on a legit connect.
       realmConnectionCallback.disconnected
       return
     }
 
     val accountFlag = msg.byteBuf.readIntLE
 
-    logger.info(s"${Ansi.BGREEN}Successfully logged into realm server. ${Ansi.BCYAN}Looking for realm ${Ansi.BPURPLE}${Global.config.wow.realmlist.name}${Ansi.CLR}")
+    // ask for realm list
+    logger.info(s"${Ansi.BGREEN}Successfully logged into realm server.${Ansi.BCYAN} Looking for realm${Ansi.BPURPLE} ${Global.config.wow.realmlist.name}${Ansi.CLR}")
     val data = PooledByteBufAllocator.DEFAULT.buffer(4, 4)
     data.writeIntLE(0)
     ctx.get.writeAndFlush(Packet(RealmPackets.CMD_REALM_LIST, data))
@@ -205,7 +219,6 @@ class RealmPacketHandler(realmConnectionCallback: RealmConnectionCallback)
     val configRealm = Global.config.wow.realmlist.name
 
     val parsedRealmList = parseRealmList(msg)
-
     val realms = parsedRealmList
       .filter {
         case RealmList(name, _, _) => name.equalsIgnoreCase(configRealm)
