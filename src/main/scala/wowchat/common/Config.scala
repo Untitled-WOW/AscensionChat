@@ -17,7 +17,15 @@ case class RealmListConfig(name: String, host: String, port: Int)
 case class GuildConfig(notificationConfigs: Map[String, GuildNotificationConfig])
 case class GuildNotificationConfig(enabled: Boolean, format: String, channel: Option[String])
 case class ChannelConfig(chatDirection: ChatDirection, wow: WowChannelConfig, discord: DiscordChannelConfig)
-case class WowChannelConfig(id: Option[Int], tp: Byte, channel: Option[String] = None, format: String, filters: Option[FiltersConfig])
+case class WowChannelConfig(
+  id: Option[Int],
+  tp: Byte,
+  channel: Option[String] = None,
+  format: String,
+  filters: Option[FiltersConfig],
+  includePatterns: Seq[String] = Seq(),   // NEW
+  excludePatterns: Seq[String] = Seq()    // NEW
+)
 case class DiscordChannelConfig(channel: String, format: String, filters: Option[FiltersConfig], gmchat: Boolean)
 case class FiltersConfig(enabled: Boolean, patterns: Seq[String])
 
@@ -167,6 +175,8 @@ object WowChatConfig extends GamePackets {
             wowChannel,
             getOpt[String](channel, "wow.format").getOrElse(""),
             parseFilters(getConfigOpt(channel, "wow.filters")),
+            getOpt[Seq[String]](channel, "wow.include_patterns").getOrElse(Seq()),  // NEW
+            getOpt[Seq[String]](channel, "wow.exclude_patterns").getOrElse(Seq())   // NEW
           ),
           DiscordChannelConfig(
             channel.getString("discord.channel"),

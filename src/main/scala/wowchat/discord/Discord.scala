@@ -103,10 +103,20 @@ class Discord(discordConnectionCallback: CommonConnectionCallback) extends Liste
               .replace("%target", wowChannel.getOrElse(""))
 
             val filter = shouldFilter(channelConfig.filters, formatted)
-            logger.info(s"${if (filter) "FILTERED " else ""}WoW->Discord (${channel.getName}): $formatted")
-            if (!filter) {
+
+            // NEW: check include/exclude patterns from WowChannelConfig
+            val wowCfgOpt = Global.config.channels.find(_.discord.channel.equalsIgnoreCase(channelConfig.channel))
+            val wowCfg = wowCfgOpt.map(_.wow)
+            val includeOk = wowCfg.forall(cfg => cfg.includePatterns.isEmpty || cfg.includePatterns.exists(p => formatted.matches(p)))
+            val excludeHit = wowCfg.exists(cfg => cfg.excludePatterns.nonEmpty && cfg.excludePatterns.exists(p => formatted.matches(p)))
+
+            if (includeOk && !excludeHit && !filter) {
+              logger.info(s"WoW->Discord (${channel.getName}): $formatted")
               channel.sendMessage(formatted).queue()
+            } else {
+              logger.debug(s"SKIPPED WoW->Discord (${channel.getName}): $formatted (includeOk=$includeOk, excludeHit=$excludeHit, filter=$filter)")
             }
+
             if (Global.config.discord.enableTagFailedNotifications && !gmMessage) { // never whisper a gm about tag fails
               errors.foreach(error => {
                 Global.game.foreach(_.sendMessageToWow(ChatEvents.CHAT_MSG_WHISPER, error, from))
