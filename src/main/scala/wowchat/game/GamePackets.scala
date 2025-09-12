@@ -378,10 +378,12 @@ trait GamePackets {
     val SERVER_MSG_SHUTDOWN_CANCELLED = 0x04
     val SERVER_MSG_RESTART_CANCELLED = 0x05
   }
-
+// Changed to use ids used for ASCENSION / NEWCOMERS instead of | into General / Trade
   object ChatChannelIds {
     val GENERAL = 0x01
     val TRADE = 0x02
+    val ASCENSION = 0x1B
+    val NEWCOMERS = 0x1C	
     val LOCAL_DEFENSE = 0x16
     val WORLD_DEFENSE = 0x17
     val GUILD_RECRUITMENT = WowChatConfig.getExpansion match {
@@ -392,11 +394,15 @@ trait GamePackets {
 
     def getId(channel: String) = {
       channel.takeWhile(_ != ' ').toLowerCase match {
-        case "general" | "ascension" => GENERAL
-        case "trade" | "newcomers" => TRADE
+	    // case "general" | "ascension" => GENERAL
+        // case "trade" | "newcomers" => TRADE
+        case "general" => GENERAL
+        case "trade" => TRADE		
+        case "guildrecruitment" => GUILD_RECRUITMENT
+		case "ascension" | "gielinor" => ASCENSION
+        case "newcomers" => NEWCOMERS			
         case "localdefense" => LOCAL_DEFENSE
         case "worlddefense" => WORLD_DEFENSE
-        case "guildrecruitment" => GUILD_RECRUITMENT
         case "lookingforgroup" => LOOKING_FOR_GROUP
         case _ => 0x00
       }
